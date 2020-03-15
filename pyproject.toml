@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "covid19"
+version = "0.1.0"
+description = ""
+authors = ["Martin Høy <marhoy@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pandas = "^1.0.1"
+dash = "^1.9.1"
+dash-bootstrap-components = "^0.9.1"
+gunicorn = {version = "^20.0", optional = true}
+
+[tool.poetry.dev-dependencies]
+jupyter = "^1.0.0"
+matplotlib = "^3.2.0"
+
+[tool.poetry.extras]
+gunicorn = ["gunicorn"]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
