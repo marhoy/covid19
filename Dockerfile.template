@@ -1,4 +1,4 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine-python:3.8-run
+FROM balenalib/%%BALENA_MACHINE_NAME%%-python:3.8
 
 # Install poetry in the system python
 RUN pip install --upgrade pip && pip install poetry
@@ -17,7 +17,7 @@ RUN chown $USERNAME.$USERNAME .
 USER $USERNAME
 
 # Copy the lock file. If it hasn't changed, we won't reinstall packages
-COPY --chown=$USERNAME:$USERNAME poetry.lock pyproject.toml ./
+COPY poetry.lock pyproject.toml ./
 
 # Install required packages, and the optional gunicorn
 RUN poetry install --no-dev -E gunicorn
