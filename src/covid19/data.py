@@ -1,15 +1,41 @@
-import pandas as pd
+import io
+from datetime import timedelta
 from importlib import resources
 
+import pandas as pd
+import requests
+import requests_cache
 
-DATA_SOURCE = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"
+# Use caching of requests
+requests_cache.install_cache(expire_after=timedelta(hours=1))
+
+INFECTED_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master" \
+                  r"/csse_covid_19_data/csse_covid_19_time_series/time_series_19" \
+                  r"-covid-Confirmed.csv"
+DEATHS_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master" \
+                r"/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid" \
+                r"-Deaths.csv"
+
 DAY_ZERO_START = 20
 
 
-def get_covid():
-    covid = pd.read_csv(DATA_SOURCE).groupby("Country/Region").sum()
-    covid.index.name = "Country"
-    covid = covid.rename({
+def get_infected():
+    response = requests.get(INFECTED_SOURCE)
+    buffer = io.StringIO(response.content.decode('UTF-8'))
+    data = pd.read_csv(buffer).groupby("Country/Region").sum()
+    return preprocess_covid(data)
+
+
+def get_deaths():
+    response = requests.get(DEATHS_SOURCE)
+    buffer = io.StringIO(response.content.decode('UTF-8'))
+    data = pd.read_csv(buffer).groupby("Country/Region").sum()
+    return preprocess_covid(data)
+
+
+def preprocess_covid(data):
+    data.index.name = "Country"
+    data = data.rename({
         "US": "United States",
         "Korea, South": "South Korea",
         "Congo (Kinshasa)": "Congo",
@@ -17,10 +43,10 @@ def get_covid():
         "North Macedonia": "Macedonia",
         "Czechia": "Czech Republic",
     })
-    covid = covid.drop(["Lat", "Long"], axis=1).T
-    covid = covid.reset_index(drop=True)
-    covid.index.name = "Day"
-    return covid
+    data = data.drop(["Lat", "Long"], axis=1).T
+    data = data.reset_index(drop=True)
+    data.index.name = "Day"
+    return data
 
 
 def get_population():
@@ -32,7 +58,8 @@ def get_population():
     })
     countries.index = countries["name"]
     countries.index.name = "Country"
-    countries = countries.drop(countries.columns.difference(["pop2020", "area"]), axis=1)
+    countries = countries.drop(countries.columns.difference(["pop2020", "area"]),
+                               axis=1)
     countries = countries.rename({
         "pop2020": "Population",
         "area": "Area"
@@ -41,35 +68,44 @@ def get_population():
     return countries
 
 
-def shifted_data():
-    covid = get_covid()
-    countries = get_population()
+def get_shifted_data():
+    infected_all = get_infected()
+    deaths_all = get_deaths()
+    population = get_population()
 
-    counts = []
-    per_pop = []
-    per_area = []
-    per_dens = []
-    for col in covid.columns:
-        if col not in countries.index:
+    infected = []
+    deaths = []
+    for country in infected_all.columns:
+        if country not in population.index:
             # Skip countries where we don't have population data
             continue
-        day_zero = covid[col].gt(DAY_ZERO_START)
-        if not day_zero.any():
-            # Skip countries that haven't passed DAY_ZERO_START people
+        day_zero_gt = infected_all[country].gt(DAY_ZERO_START)
+        if not day_zero_gt.any():
+            # Skip countries that haven't passed DAY_ZERO_START infected
             continue
-        day_zero_idx = day_zero.idxmax()
-        count = covid[col].loc[day_zero_idx:].reset_index(drop=True)
-        if len(count.dropna()) < 5:
+        day_zero_idx = day_zero_gt.idxmax()
+        s_infected = infected_all[country].loc[day_zero_idx:].reset_index(drop=True)
+        s_deaths = deaths_all[country].loc[day_zero_idx:].reset_index(drop=True)
+        if len(s_infected.dropna()) < 5:
             # If a country has less than 5 days of history, skip it
             continue
-        counts.append(count)
-        per_pop.append(count / countries.loc[col, "Population"]*100_000)
-        per_area.append(count / countries.loc[col, "Area"])
-        per_dens.append(count / countries.loc[col, "Density"])
+        infected.append(s_infected)
+        deaths.append(s_deaths)
 
-    counts = pd.DataFrame(counts).T
-    per_pop = pd.DataFrame(per_pop).T
-    per_area = pd.DataFrame(per_area).T
-    per_dens = pd.DataFrame(per_dens).T
+    # Transform list of Series into DataFrames
+    infected = pd.DataFrame(infected).T
+    deaths = pd.DataFrame(deaths).T
 
-    return counts, per_pop, per_dens
+    # Infected per population
+    inf_per_pop = pd.DataFrame(
+        [infected[country] / population.loc[country, "Population"] for country in
+         infected]).T
+    inf_per_pop *= 100_000
+
+    # Dead per population
+    inf_per_pop = pd.DataFrame(
+        [deaths[country] / population.loc[country, "Population"] for country in
+         deaths]).T
+    inf_per_pop *= 100_000
+
+    return infected, deaths, population

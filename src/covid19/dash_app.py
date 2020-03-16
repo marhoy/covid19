@@ -18,8 +18,10 @@ app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],
 app.title = "Corona Dashboard"
 
 
-# Get some data
-counts, per_pop, per_dens = covid19.data.shifted_data()
+# Load data once
+infected, deaths, population = covid19.data.get_shifted_data()
+inf_per_pop = infected / population.loc[infected.columns, "Population"] * 100_000
+dea_per_pop = deaths / population.loc[infected.columns, "Population"] * 100_000
 
 
 footer = html.Div([
@@ -73,7 +75,7 @@ tab_current = html.Div([
             dcc.Dropdown(
                 id="multiple-countries-selector",
                 options=[{"label": country, "value": country} for country in
-                         counts.columns],
+                         infected.columns],
                 value=[
                     "Norway", "Sweden", "Denmark", "Italy", "Spain", "China"
                 ],
@@ -95,7 +97,7 @@ tab_forecast = html.Div([
             dcc.Dropdown(
                 id="country-selector",
                 options=[{"label": country, "value": country} for country in
-                         counts.columns],
+                         infected.columns],
                 value="Norway",
                 clearable=False,
                 className="mb-4")
@@ -177,6 +179,7 @@ def create_current_plot(countries):
 
     fig = go.Figure(
         layout={
+            "title": "Confirmed infected per population size",
             "xaxis": {
                 "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"
@@ -184,13 +187,13 @@ def create_current_plot(countries):
             "yaxis": {
                 "title":
                     f"Confirmed infected per 100.000 population"
-            }
+            },
         }
     )
     for country in countries:
         fig.add_trace(go.Scatter(
-            x=per_pop.index,
-            y=per_pop[country].values,
+            x=inf_per_pop.index,
+            y=inf_per_pop[country].values,
             name=country,
             mode="lines"
         ))
@@ -209,7 +212,7 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
     """This creates the figure with the forecasts
     """
     observed_data, forecast, being_ill = covid19.forecast.create_forecast(
-        country=country,
+        infected[country],
         day_of_control=day_of_control,
         days_to_recover=recovery_days,
         forecast_start=-1)
