@@ -15,6 +15,8 @@ app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],
                      'content': 'width=device-width, initial-scale=1'}
                 ],
                 suppress_callback_exceptions=True)
+app.title = "Corona Dashboard"
+
 
 # Get some data
 counts, per_pop, per_dens = covid19.data.shifted_data()
