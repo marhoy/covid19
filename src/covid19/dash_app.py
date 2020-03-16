@@ -11,7 +11,8 @@ from dash.dependencies import Input, Output
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],
                 meta_tags=[
-                    {'name':'viewport','content':'width=device-width, initial-scale=1'}
+                    {'name': 'viewport',
+                     'content': 'width=device-width, initial-scale=1'}
                 ],
                 suppress_callback_exceptions=True)
 
@@ -40,8 +41,16 @@ app.layout = dbc.Container(
             html.Hr(),
             dbc.Tabs(
                 [
-                    dbc.Tab(label="Current situation", tab_id="tab-current"),
-                    dbc.Tab(label="Forecast", tab_id="tab-forecast"),
+                    dbc.Tab(
+                        label="Current situation",
+                        tab_id="tab-current",
+                        labelClassName="h3",
+                    ),
+                    dbc.Tab(
+                        label="Forecast",
+                        tab_id="tab-forecast",
+                        labelClassName="h3",
+                    ),
                 ],
                 id="tabs",
                 active_tab="tab-current",
@@ -56,9 +65,6 @@ app.layout = dbc.Container(
 
 
 tab_current = html.Div([
-    html.H2("Current situation",
-            style={"margin-bottom": "1.5rem"}),
-
     dbc.Row([
         dbc.Col([
             html.Label("Select one or more countries"),
@@ -81,14 +87,13 @@ tab_current = html.Div([
 
 
 tab_forecast = html.Div([
-    html.H2("Forecasts of development"),
-
     dbc.Row([
         dbc.Col([
             html.Label("Select country"),
             dcc.Dropdown(
                 id="country-selector",
-                options=[{"label": country, "value": country} for country in counts.columns],
+                options=[{"label": country, "value": country} for country in
+                         counts.columns],
                 value="Norway",
                 clearable=False)
         ], md=6),
@@ -131,20 +136,21 @@ tab_forecast = html.Div([
             dcc.Markdown("""
             This is how the forecast model works:
             
-            The measures taken in e.g. China and South Korea have shown that they were able
-            to drive the growth towards 1.0 in an exponential way. 
-            **NB: The model assumes that the country in question is taking measures that are as 
-            effective as the ones taken in China**
+            The measures taken in e.g. China and South Korea have shown that they were
+            able to drive the growth towards 1.0 in an exponential way. 
+            **NB: The model assumes that the country in question is taking measures
+            that are as effective as the ones taken in China**
             
-            * The current growth rate is estimated by using an exponentially weighted average 
-                of the last 4 days.
-            * The growth rate is assumed to converge towards 1.0 in an exponential decay.
+            * The current growth rate is estimated by using an exponentially weighted
+                average of the last 4 days.
+            * The growth rate is assumed to converge towards 1.0 in an exponential
+                decay.
                 The speed of the decay is controlled by the parameter "Day when under 
                 control" below.
             * Patients are assumed to be ill from the day they are infected.
             * They are assumed to have recovered after the number of days you specify.
-        """),
-       ])
+            """),
+            ])
     ])
 
 ])
@@ -184,7 +190,7 @@ def create_current_plot(countries):
             y=per_pop[country].values,
             name=country,
             mode="lines"
-    ))
+        ))
 
     return fig
 
@@ -210,11 +216,11 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
     being_ill *= unrecorded_factor
 
     fig = go.Figure(
-        layout={
-            "xaxis": {
-                "title":
+            layout={
+                "xaxis": {
+                    "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"}
-        }
+            }
     )
     fig.add_trace(go.Scatter(
         x=observed_data.index,
