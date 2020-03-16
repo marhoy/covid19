@@ -98,7 +98,7 @@ tab_forecast = html.Div([
                 clearable=False)
         ], md=6),
         dbc.Col([
-            html.Label("They day when spreading is under control"),
+            html.Label("The day when spreading is under control"),
             dcc.Slider(
                 id="day-of-control",
                 min=20, max=60, step=5,
