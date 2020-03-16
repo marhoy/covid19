@@ -37,24 +37,24 @@ footer = html.Div([
 app.layout = dbc.Container(
     dbc.Row(dbc.Col(
         [
-            html.H1("COVID-19: Current status and possible future"),
-            html.Hr(),
+            html.H1("COVID-19: Current status and possible future",
+                    className="mt-4 mb-4"),
             dbc.Tabs(
                 [
                     dbc.Tab(
                         label="Current situation",
                         tab_id="tab-current",
-                        labelClassName="h3",
+                        labelClassName="h3 mb-0",
                     ),
                     dbc.Tab(
                         label="Forecast",
                         tab_id="tab-forecast",
-                        labelClassName="h3",
+                        labelClassName="h3 mb-0",
                     ),
                 ],
                 id="tabs",
                 active_tab="tab-current",
-                style={"margin-bottom": "1.5rem"}
+                className="mb-4"
             ),
             html.Div(id="tabs-content"),
 
@@ -95,7 +95,8 @@ tab_forecast = html.Div([
                 options=[{"label": country, "value": country} for country in
                          counts.columns],
                 value="Norway",
-                clearable=False)
+                clearable=False,
+                className="mb-4")
         ], md=6),
         dbc.Col([
             html.Label("The day when spreading is under control"),
