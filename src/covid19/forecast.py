@@ -5,8 +5,8 @@ import pandas as pd
 
 
 def growth_rate_exp_decay(initial_rate: float, days_until_control: int) -> np.array:
-    x = np.arange(0, days_until_control*2)
     time_constant = days_until_control/4
+    x = np.arange(0, time_constant*6)
     y = (initial_rate - 1)*np.exp(-x/time_constant) + 1
     return y
 

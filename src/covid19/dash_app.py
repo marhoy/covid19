@@ -106,9 +106,9 @@ tab_forecast = html.Div([
             html.Label("The day when spreading is under control"),
             dcc.Slider(
                 id="day-of-control",
-                min=20, max=60, step=5,
-                marks={i: f"{i}" for i in range(20, 61, 5)},
-                value=30),
+                min=30, max=120, step=10,
+                marks={i: f"{i}" for i in range(30, 121, 10)},
+                value=60),
         ], md=6),
     ]),
 
@@ -127,7 +127,7 @@ tab_forecast = html.Div([
                 id="recovery-days",
                 min=5, max=25, step=5,
                 marks={i: f"{i}" for i in range(5, 26, 5)},
-                value=14)
+                value=15)
         ], md=6)
     ]),
 
@@ -147,7 +147,7 @@ tab_forecast = html.Div([
             that are as effective as the ones taken in China**
             
             * The current growth rate is estimated by using an exponentially weighted
-                average of the last 4 days.
+                average of the last 7 days.
             * The growth rate is assumed to converge towards 1.0 in an exponential
                 decay.
                 The speed of the decay is controlled by the parameter "Day when under 
@@ -215,7 +215,8 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
         infected[country],
         day_of_control=day_of_control,
         days_to_recover=recovery_days,
-        forecast_start=-1)
+        forecast_start=-1,
+        ratio_avg_days=4)
 
     observed_data *= unrecorded_factor
     forecast *= unrecorded_factor
@@ -223,6 +224,7 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
 
     fig = go.Figure(
             layout={
+                "title": "Forecast: Number of infected",
                 "xaxis": {
                     "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"}
@@ -231,8 +233,8 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
     fig.add_trace(go.Scatter(
         x=observed_data.index,
         y=observed_data.values,
-        name="Confirmed infected",
-        line=dict(color="green", width=5),
+        name="Currently infected",
+        line=dict(color="green", width=8),
         mode="lines"
     ))
     fig.add_trace(go.Scatter(
