@@ -1,3 +1,3 @@
-import covid19.dash_app
+import covid19.dash_main
 
-app = covid19.dash_app.app.server
+app = covid19.dash_main.app.server
