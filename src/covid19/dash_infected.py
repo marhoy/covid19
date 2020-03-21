@@ -54,7 +54,7 @@ tab_infected = html.Div([
     dbc.Row(dbc.Col(
         dbc.FormGroup([
             dbc.Label("Select date. The labels are week numbers in 2020, with the "
-                      "mark on the Monday"),
+                      "mark on the Monday of that week."),
             dcc.Slider(
                 id="infected-map-date",
                 min=0,
@@ -138,7 +138,7 @@ def create_infected_map(idx):
             },
             "center": {
                 "lon": 10,
-                "lat": 40,
+                "lat": 20,
             }
         },
         margin=dict(t=30, b=10, l=0, r=0),
