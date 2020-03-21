@@ -12,43 +12,45 @@ from .dash_app import app, DROPDOWN_COUNTRIES_OPTIONS
 infected, deaths, population = covid19.data.get_shifted_data()
 
 tab_forecast = html.Div([
+
     dbc.Row([
-        dbc.Col([
-            html.Label("Select country"),
+        dbc.Col(dbc.FormGroup([
+            dbc.Label("Select country"),
             dcc.Dropdown(
                 id="forecast-country-selector",
                 options=DROPDOWN_COUNTRIES_OPTIONS,
                 value="Norway",
-                clearable=False,
-                className="mb-4")
-        ], md=6),
-        dbc.Col([
-            html.Label("The day when spreading is under control"),
+                clearable=False)
+        ]), md=6),
+
+        dbc.Col(dbc.FormGroup([
+            dbc.Label("The day when spreading is under control"),
             dcc.Slider(
                 id="day-of-control",
                 min=30, max=120, step=10,
                 marks={i: f"{i}" for i in range(30, 121, 10)},
                 value=60),
-        ], md=6),
+        ]), md=6),
     ]),
 
     dbc.Row([
-        dbc.Col([
-            html.Label("Factor of unrecorded cases"),
+        dbc.Col(dbc.FormGroup([
+            dbc.Label("Factor of unrecorded cases"),
             dcc.Slider(
                 id="unrecorded-factor",
                 min=1, max=5, step=1,
                 marks={i: f"{i}" for i in range(1, 6)},
                 value=2),
-        ], md=6),
-        dbc.Col([
-            html.Label("Number of days it takes to recover from the infection"),
+        ]), md=6),
+
+        dbc.Col(dbc.FormGroup([
+            dbc.Label("Number of days it takes to recover from the infection"),
             dcc.Slider(
                 id="recovery-days",
                 min=5, max=25, step=5,
                 marks={i: f"{i}" for i in range(5, 26, 5)},
                 value=15)
-        ], md=6)
+        ]), md=6)
     ]),
 
     dbc.Row([
@@ -107,7 +109,9 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
                 "title": "Forecast: Number of infected",
                 "xaxis": {
                     "title":
-                    f"Days since more that {DAY_ZERO_START} people confirmed infected"}
+                    f"Days since more that {DAY_ZERO_START} people confirmed infected"},
+                "yaxis": {
+                }
             }
     )
     fig.add_trace(go.Scatter(

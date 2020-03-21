@@ -13,15 +13,26 @@ infected, deaths, population = covid19.data.get_shifted_data()
 
 tab_deaths = html.Div([
     dbc.Row([
-        dbc.Col([
-            html.Label("Select one or more countries"),
+        dbc.Col(dbc.FormGroup([
+            dbc.Label("Select one or more countries"),
             dcc.Dropdown(
                 id="deaths-countries-selector",
                 options=DROPDOWN_COUNTRIES_OPTIONS,
                 value=DROPDOWN_SELECTED_COUNTRIES,
                 multi=True,
                 clearable=False)
-        ], md=6, style={"margin-bottom": "1.5rem"}),
+        ]), md=6),
+        dbc.Col(dbc.FormGroup([
+            dbc.Label("Select plot scale"),
+            dbc.RadioItems(
+                id="deaths-plot-scale",
+                options=[
+                    {"value": "linear", "label": "Linear"},
+                    {"value": "log", "label": "Logarithmic"},
+                ],
+                value='linear',
+            )
+        ]), md=6)
     ]),
 
     dbc.Row([
@@ -36,8 +47,9 @@ tab_deaths = html.Div([
 
 @app.callback(
     dash.dependencies.Output("deaths-per-pop-figure", "figure"),
-    [dash.dependencies.Input("deaths-countries-selector", "value")])
-def create_current_plot(countries_to_plot):
+    [dash.dependencies.Input("deaths-countries-selector", "value"),
+     dash.dependencies.Input("deaths-plot-scale", "value")])
+def create_current_plot(countries_to_plot, y_axis_type):
     """Creates a plot with the number of infected"""
     fig = go.Figure(
         layout={
@@ -48,7 +60,8 @@ def create_current_plot(countries_to_plot):
             },
             "yaxis": {
                 "title":
-                    f"Deaths per 100.000 population"
+                    f"Deaths per 100.000 population",
+                "type": y_axis_type
             },
         }
     )
@@ -78,7 +91,7 @@ def create_current_plot(countries_to_plot):
             },
             "yaxis": {
                 "title":
-                    f"Deaths per infected"
+                    f"Deaths per infected",
             },
         }
     )

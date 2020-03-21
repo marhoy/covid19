@@ -35,54 +35,74 @@ def download_deaths():
 
 
 def preprocess_covid_dataframe(data):
-    # Treat Hubei in China as a separate country
-    data.loc[data['Province/State'] == "Hubei", "Country/Region"] = "China - Hubei"
+    # Rename some countries before we groupby and sum
     data["Country/Region"] = data["Country/Region"].replace({
-        "China": "China - Others"
+        "Congo (Brazzaville)": "Congo",
+        "Congo (Kinshasa)": "Congo",
     })
 
+    # Append Hubei in China as a separate country
+    hubei = data[data["Province/State"] == "Hubei"].copy()
+    hubei.at[:, "Country/Region"] = "China - Hubei"
+    data = data.append(hubei)
+
+    # Sum over all Province/State within the same Country/Region
     data = data.groupby("Country/Region").sum()
-    data.index.name = "Country"
+
+    # Add the rest of China (minus Hubei) as a separate country
+    china_others = data.loc["China"] - data.loc["China - Hubei"]
+    china_others.name = "China - Others"
+    data = data.append(china_others)
+
+    # Rename some countries to match with the population data
     data = data.rename({
-        "US": "United States",
+        "Bahamas, The": "Bahamas",
+        "Cote d'Ivoire": "Côte d'Ivoire",
+        "Gambia, The": "Gambia",
+        "US": "United States of America",
         "Korea, South": "South Korea",
-        "Congo (Kinshasa)": "Congo",
         "Taiwan*": "Taiwan",
         "North Macedonia": "Macedonia",
-        "Czechia": "Czech Republic",
     })
+
     data = data.drop(["Lat", "Long"], axis=1).T
     data = data.reset_index(drop=True)
     data.index.name = "Day"
+    data = data.sort_index()
+
     return data
 
 
 def get_population():
     with resources.path("covid19.resources", "world_population.csv") as file:
-        countries = pd.read_csv(file)
-    countries["pop2020"] *= 1000
-    countries["name"] = countries["name"].replace({
-        "DR Congo": "Congo"
+        countries = pd.read_csv(file, index_col=False)
+
+    # Simplify some country names
+    countries["Country"] = countries["Country"].replace({
+        "Bolivia (Plurinational State of)": "Bolivia",
+        "Brunei Darussalam": "Brunei",
+        "Iran (Islamic Republic of)": "Iran",
+        "Republic of Korea": "South Korea",
+        "Republic of Moldova": "Moldova",
+        "North Macedonia": "Macedonia",
+        "Russian Federation": "Russia",
+        "China, Taiwan Province of China": "Taiwan",
+        "United Republic of Tanzania": "Tanzania",
+        "Venezuela (Bolivarian Republic of)": "Venezuela",
+        "Viet Nam": "Vietnam"
     })
-    countries.index = countries["name"]
-    countries.index.name = "Country"
-    countries = countries.drop(countries.columns.difference(["pop2020", "area"]),
-                               axis=1)
-    countries = countries.rename({
-        "pop2020": "Population",
-        "area": "Area"
-    }, axis=1)
+    countries.index = countries["Country"]
 
     # Add Hubei in China as a separate country
     countries.loc["China - Hubei", "Population"] = 58_500_000
-    countries.loc["China - Hubei", "Area"] = 185_900
-    countries.loc["China", "Population"] -= countries.loc["China - Hubei", "Population"]
-    countries.loc["China", "Population"] -= countries.loc["China - Hubei", "Area"]
-    countries = countries.rename({
-        "China": "China - Others"
-    })
+    countries.loc["China - Hubei", "PopulationDensity"] = 58_500_000 / 185_900
+    countries.loc["China - Others", "Population"] = \
+        countries.loc["China", "Population"] - 58_500_000
+    countries.loc["China - Others", "PopulationDensity"] = \
+        countries.loc["China - Others", "Population"] / (9_597_000 - 185_900)
 
-    countries["Density"] = countries["Population"] / countries["Area"]
+    countries = countries.sort_index()
+
     return countries
 
 
