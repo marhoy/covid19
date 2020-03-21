@@ -66,9 +66,10 @@ def preprocess_covid_dataframe(data):
     })
 
     data = data.drop(["Lat", "Long"], axis=1).T
-    data = data.reset_index(drop=True)
-    data.index.name = "Day"
-    data = data.sort_index()
+    data.index = pd.to_datetime(data.index)
+    # data = data.reset_index(drop=True)
+    # data.index.name = "Day"
+    # data = data.sort_index()
 
     return data
 
