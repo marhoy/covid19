@@ -1,15 +1,13 @@
-import covid19.data
-import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
+from dash.dependencies import Input, Output
 
-from .dash_app import app, DROPDOWN_SELECTED_COUNTRIES, DROPDOWN_COUNTRIES_OPTIONS
+import covid19.data
+
+from .dash_app import DROPDOWN_SELECTED_COUNTRIES, app
 from .data import DAY_ZERO_START
-
-infected, deaths, population = covid19.data.get_shifted_data()
-
 
 tab_deaths = html.Div([
     dbc.Row([
@@ -17,7 +15,6 @@ tab_deaths = html.Div([
             dbc.Label("Select one or more countries"),
             dcc.Dropdown(
                 id="deaths-countries-selector",
-                options=DROPDOWN_COUNTRIES_OPTIONS,
                 value=DROPDOWN_SELECTED_COUNTRIES,
                 multi=True,
                 clearable=False)
@@ -45,12 +42,20 @@ tab_deaths = html.Div([
 ])
 
 
+@app.callback(Output("deaths-countries-selector", "options"),
+              [Input("deaths-countries-selector", "value")])
+def get_all_countries(*_):
+    return covid19.dash_app.all_countries
+
+
 @app.callback(
-    dash.dependencies.Output("deaths-per-pop-figure", "figure"),
-    [dash.dependencies.Input("deaths-countries-selector", "value"),
-     dash.dependencies.Input("deaths-plot-scale", "value")])
-def create_current_plot(countries_to_plot, y_axis_type):
-    """Creates a plot with the number of infected"""
+    Output("deaths-per-pop-figure", "figure"),
+    [Input("deaths-countries-selector", "value"),
+     Input("deaths-plot-scale", "value")])
+def create_deaths_plot(countries_to_plot, y_axis_type):
+    deaths = covid19.dash_app.deaths
+    population = covid19.dash_app.population
+
     fig = go.Figure(
         layout={
             "title": "Deaths per population size",
@@ -77,26 +82,26 @@ def create_current_plot(countries_to_plot, y_axis_type):
     return fig
 
 
-@app.callback(
-    dash.dependencies.Output("deaths-per-inf-figure", "figure"),
-    [dash.dependencies.Input("deaths-countries-selector", "value")])
-def create_current_plot(countries_to_plot):
-    """Creates a plot with the number of infected"""
+@app.callback(Output("deaths-per-inf-figure", "figure"),
+              [Input("deaths-countries-selector", "value")])
+def create_death_per_infected_plot(countries_to_plot):
+    infected = covid19.dash_app.infected
+    deaths = covid19.dash_app.deaths
     fig = go.Figure(
         layout={
-            "title": "Deaths per confirmed infected",
+            "title": "Deaths per confirmed infected (CFR)",
             "xaxis": {
                 "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"
             },
             "yaxis": {
                 "title":
-                    f"Deaths per infected",
+                    f"Deaths per infected (CFR)",
             },
         }
     )
     for country in countries_to_plot:
-        data = (deaths[country]/ infected[country]).dropna()
+        data = (deaths[country] / infected[country]).dropna()
         fig.add_trace(go.Scatter(
             x=data.index,
             y=data.values,

@@ -1,18 +1,14 @@
-import covid19.data
-import dash.dependencies
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objects as go
+from dash.dependencies import Input, Output
 
-from .dash_app import app, DROPDOWN_SELECTED_COUNTRIES, DROPDOWN_COUNTRIES_OPTIONS
+import covid19.dash_app
+
+from .dash_app import DROPDOWN_SELECTED_COUNTRIES, app
 from .data import DAY_ZERO_START
-
-infected, deaths, population = covid19.data.get_shifted_data()
-inf_per_pop = infected / population.loc[infected.columns, "Population"] * 100_000
-infected_raw = covid19.data.download_infected()
-
 
 tab_infected = html.Div([
     html.H2("Compare development in different countries"),
@@ -21,7 +17,6 @@ tab_infected = html.Div([
             dbc.Label("Select one or more countries"),
             dcc.Dropdown(
                 id="infected-countries-selector",
-                options=DROPDOWN_COUNTRIES_OPTIONS,
                 value=DROPDOWN_SELECTED_COUNTRIES,
                 multi=True,
                 clearable=False)
@@ -58,15 +53,14 @@ tab_infected = html.Div([
             dcc.Slider(
                 id="infected-map-date",
                 min=0,
-                max=len(infected_raw) - 1,
+                max=len(covid19.dash_app.infected_raw) - 1,
                 step=1,
-                value=len(infected_raw) - 1,
+                value=len(covid19.dash_app.infected_raw) - 1,
                 marks={
-                    infected_raw.index.get_loc(date):
-                        f"{date.week}"
+                    covid19.dash_app.infected_raw.index.get_loc(date): f"{date.week}"
                     for date in pd.date_range(
-                        start=infected_raw.index[0],
-                        end=infected_raw.index[-1], freq="W-MON")
+                        start=covid19.dash_app.infected_raw.index[0],
+                        end=covid19.dash_app.infected_raw.index[-1], freq="W-MON")
                     }
             )
         ]), md=6)
@@ -75,11 +69,21 @@ tab_infected = html.Div([
 ])
 
 
+@app.callback(Output("infected-countries-selector", "options"),
+              [Input("infected-countries-selector", "value")])
+def get_all_countries(*_):
+    return covid19.dash_app.all_countries
+
+
 @app.callback(
-    dash.dependencies.Output("infected-figure", "figure"),
-    [dash.dependencies.Input("infected-countries-selector", "value"),
-     dash.dependencies.Input("infected-plot-scale", "value")])
+    Output("infected-figure", "figure"),
+    [Input("infected-countries-selector", "value"),
+     Input("infected-plot-scale", "value")])
 def create_infected_plot(countries_to_plot, y_axis_type):
+    infected = covid19.dash_app.infected
+    population = covid19.dash_app.population
+    inf_per_pop = infected / population.loc[infected.columns, "Population"] * 100_000
+
     fig = go.Figure(
         layout={
             "title": "Confirmed infected per population size",
@@ -106,10 +110,11 @@ def create_infected_plot(countries_to_plot, y_axis_type):
     return fig
 
 
-@app.callback(
-    dash.dependencies.Output("infected-map", "figure"),
-    [dash.dependencies.Input("infected-map-date", "value")])
+@app.callback(Output("infected-map", "figure"),
+              [Input("infected-map-date", "value")])
 def create_infected_map(idx):
+    infected_raw = covid19.dash_app.infected_raw
+    population = covid19.dash_app.population
     inf_at_date = infected_raw.iloc[idx]
     inf_at_date = inf_at_date[round(inf_at_date) > 0]
 

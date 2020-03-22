@@ -1,5 +1,5 @@
+import datetime
 import io
-from datetime import timedelta
 from importlib import resources
 from typing import Tuple
 
@@ -8,7 +8,7 @@ import requests
 import requests_cache
 
 # Use caching of requests
-requests_cache.install_cache(expire_after=timedelta(seconds=5))
+requests_cache.install_cache(expire_after=datetime.timedelta(seconds=60))
 
 INFECTED_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master" \
                   r"/csse_covid_19_data/csse_covid_19_time_series/time_series_19" \
@@ -17,6 +17,7 @@ DEATHS_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/mast
                 r"/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid" \
                 r"-Deaths.csv"
 
+DATA_UPDATE_TIME = datetime.time(1, 0, tzinfo=datetime.timezone.utc)
 DAY_ZERO_START = 20
 
 
@@ -148,3 +149,16 @@ def get_shifted_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     # dea_per_pop *= 100_000
 
     return infected, deaths, population
+
+
+def data_timestamp():
+    """Returns the timestamp of the last commit to the .csv-file"""
+    r = requests.get(
+        r"https://api.github.com/repos/CSSEGISandData/COVID-19/commits",
+        params={"path": "csse_covid_19_data/csse_covid_19_time_series/time_series_19"
+                "-covid-Confirmed.csv"})
+    try:
+        timestamp = pd.Timestamp(r.json()[0]["commit"]["committer"]["date"])
+    except KeyError:
+        timestamp = pd.Timestamp(0)
+    return timestamp

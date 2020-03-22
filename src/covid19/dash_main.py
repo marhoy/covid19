@@ -1,4 +1,5 @@
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
@@ -14,6 +15,11 @@ app.layout = dbc.Container(
         [
             html.H1("COVID-19: Current status and possible future",
                     className="mt-4 mb-4"),
+            dcc.Interval(
+                id='interval-component',
+                interval=600*1000,  # 10 minutes
+                n_intervals=0),
+            html.Div(id="live-update-text"),
             dbc.Tabs(
                 [
                     dbc.Tab(
@@ -54,7 +60,3 @@ def render_content(tab):
         return tab_deaths
     elif tab == 'tab-forecast':
         return tab_forecast
-
-
-if __name__ == "__main__":
-    app.run_server(debug=True)

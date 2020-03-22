@@ -1,15 +1,13 @@
-import covid19.data
-import covid19.forecast
-import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
+from dash.dependencies import Input, Output
+
+import covid19.forecast
 from covid19.data import DAY_ZERO_START
 
-from .dash_app import app, DROPDOWN_COUNTRIES_OPTIONS
-
-infected, deaths, population = covid19.data.get_shifted_data()
+from .dash_app import app
 
 tab_forecast = html.Div([
 
@@ -18,7 +16,6 @@ tab_forecast = html.Div([
             dbc.Label("Select country"),
             dcc.Dropdown(
                 id="forecast-country-selector",
-                options=DROPDOWN_COUNTRIES_OPTIONS,
                 value="Norway",
                 clearable=False)
         ]), md=6),
@@ -64,7 +61,7 @@ tab_forecast = html.Div([
             This is how the forecast model works:
 
             The measures taken in e.g. China and South Korea have shown that they were
-            able to drive the growth towards 1.0 in an exponential way. 
+            able to drive the growth towards 1.0 in an exponential way.
             **NB: The model assumes that the country in question is taking measures
             that are as effective as the ones taken in China**
 
@@ -72,7 +69,7 @@ tab_forecast = html.Div([
                 average of the last 7 days.
             * The growth rate is assumed to converge towards 1.0 in an exponential
                 decay.
-                The speed of the decay is controlled by the parameter "Day when under 
+                The speed of the decay is controlled by the parameter "Day when under
                 control" below.
             * Patients are assumed to be ill from the day they are infected.
             * They are assumed to have recovered after the number of days you specify.
@@ -83,16 +80,24 @@ tab_forecast = html.Div([
 ])
 
 
+@app.callback(Output("forecast-country-selector", "options"),
+              [Input("forecast-country-selector", "value")])
+def get_all_countries(*_):
+    return covid19.dash_app.all_countries
+
+
 @app.callback(
-    dash.dependencies.Output("forecast-figure", "figure"),
-    [dash.dependencies.Input("forecast-country-selector", "value"),
-     dash.dependencies.Input("day-of-control", "value"),
-     dash.dependencies.Input("unrecorded-factor", "value"),
-     dash.dependencies.Input("recovery-days", "value")])
+    Output("forecast-figure", "figure"),
+    [Input("forecast-country-selector", "value"),
+     Input("day-of-control", "value"),
+     Input("unrecorded-factor", "value"),
+     Input("recovery-days", "value")])
 def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
                          recovery_days=14):
     """This creates the figure with the forecasts
     """
+    infected = covid19.dash_app.infected
+
     observed_data, forecast, being_ill = covid19.forecast.create_forecast(
         infected[country],
         day_of_control=day_of_control,
@@ -111,7 +116,8 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
                     "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"},
                 "yaxis": {
-                }
+                },
+                "margin": dict(t=40, l=20, r=20)
             }
     )
     fig.add_trace(go.Scatter(
