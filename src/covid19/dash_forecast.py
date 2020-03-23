@@ -51,6 +51,18 @@ tab_forecast = html.Div([
         ]), md=6)
     ]),
 
+    dbc.Row(dbc.Col(dbc.FormGroup([
+        dbc.Label("Select plot scale"),
+        dbc.RadioItems(
+            id="forecast-figure-scale",
+            options=[
+                {"value": "linear", "label": "Linear"},
+                {"value": "log", "label": "Logarithmic"},
+            ],
+            value='linear',
+        )
+    ]), md=6)),
+
     dbc.Row([
         dbc.Col(dcc.Graph(id='forecast-figure'), md=12)
     ]),
@@ -92,9 +104,10 @@ def forecast_country_selector_options(*_):
     [Input("forecast-country-selector", "value"),
      Input("day-of-control", "value"),
      Input("unrecorded-factor", "value"),
-     Input("recovery-days", "value")])
-def forecast_figure_figure(country, day_of_control=30, unrecorded_factor=1,
-                           recovery_days=14):
+     Input("recovery-days", "value"),
+     Input("forecast-figure-scale", "value")])
+def forecast_figure_figure(country, day_of_control, unrecorded_factor,
+                           recovery_days, y_axis_type):
     """This creates the figure with the forecasts
     """
     infected = covid19.dash_app.infected
@@ -117,6 +130,7 @@ def forecast_figure_figure(country, day_of_control=30, unrecorded_factor=1,
                     "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"},
                 "yaxis": {
+                    "type": y_axis_type
                 },
                 "margin": dict(t=40, l=20, r=20)
             }
