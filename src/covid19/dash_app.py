@@ -5,7 +5,6 @@ import pandas as pd
 from dash.dependencies import Input, Output
 
 import covid19.data
-from covid19.data import DATA_UPDATE_TIME
 
 app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],
                 meta_tags=[
@@ -29,7 +28,7 @@ all_countries = [{"label": country, "value": country} for country in infected.co
 # Periodically update the value of the global variables
 @app.callback(Output("live-update-text", "children"),
               [Input("interval-component", "n_intervals")])
-def interval_run(_):
+def live_update_text_children(_):
 
     # We store all the data as global variables, and update them here
     global infected, deaths, population, infected_raw, all_countries
@@ -45,11 +44,11 @@ def interval_run(_):
     since_update = (now - data_timestamp).round("10min")
 
     # Find time until next update
-    if now.timetz() < DATA_UPDATE_TIME:
+    if now.timetz() < covid19.data.DATA_UPDATE_TIME:
         update_date = now.date()
     else:
         update_date = now.date() + pd.Timedelta(1, "day")
-    next_update = pd.Timestamp.combine(update_date, DATA_UPDATE_TIME)
+    next_update = pd.Timestamp.combine(update_date, covid19.data.DATA_UPDATE_TIME)
     until_update = (next_update.astimezone(now.tz) - now).round("10min")
 
     # Return text about current and next update

@@ -3,11 +3,12 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
+import covid19.dash_deaths
+import covid19.dash_forecast
+import covid19.dash_infected
+
 from .dash_app import app
-from .dash_deaths import tab_deaths
 from .dash_footer import footer
-from .dash_forecast import tab_forecast
-from .dash_infected import tab_infected
 
 # The layout is divided in tabs
 app.layout = dbc.Container(
@@ -39,7 +40,7 @@ app.layout = dbc.Container(
                     ),
                 ],
                 id="tabs",
-                active_tab="tab-infected",
+                # active_tab="tab-infected",
                 className="mb-4"
             ),
             html.Div(id="tabs-content"),
@@ -49,14 +50,16 @@ app.layout = dbc.Container(
     ))
 )
 
+server = app.server
+
 
 # This function activates the selected tab
 @app.callback(Output('tabs-content', 'children'),
               [Input('tabs', 'active_tab')])
-def render_content(tab):
+def tabs_content_children(tab):
     if tab == 'tab-infected':
-        return tab_infected
+        return covid19.dash_infected.tab_infected
     elif tab == 'tab-deaths':
-        return tab_deaths
+        return covid19.dash_deaths.tab_deaths
     elif tab == 'tab-forecast':
-        return tab_forecast
+        return covid19.dash_forecast.tab_forecast

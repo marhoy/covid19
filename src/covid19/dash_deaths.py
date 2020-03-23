@@ -4,9 +4,9 @@ import dash_html_components as html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 
-import covid19.data
+import covid19.dash_app
 
-from .dash_app import DROPDOWN_SELECTED_COUNTRIES, app
+from .dash_app import app
 from .data import DAY_ZERO_START
 
 tab_deaths = html.Div([
@@ -15,7 +15,8 @@ tab_deaths = html.Div([
             dbc.Label("Select one or more countries"),
             dcc.Dropdown(
                 id="deaths-countries-selector",
-                value=DROPDOWN_SELECTED_COUNTRIES,
+                # options=covid19.dash_app.all_countries,
+                value=covid19.dash_app.DROPDOWN_SELECTED_COUNTRIES,
                 multi=True,
                 clearable=False)
         ]), md=6),
@@ -44,7 +45,7 @@ tab_deaths = html.Div([
 
 @app.callback(Output("deaths-countries-selector", "options"),
               [Input("deaths-countries-selector", "value")])
-def get_all_countries(*_):
+def deaths_countries_selector_options(*_):
     return covid19.dash_app.all_countries
 
 
@@ -52,7 +53,7 @@ def get_all_countries(*_):
     Output("deaths-per-pop-figure", "figure"),
     [Input("deaths-countries-selector", "value"),
      Input("deaths-plot-scale", "value")])
-def create_deaths_plot(countries_to_plot, y_axis_type):
+def deaths_per_pop_figure_figure(countries_to_plot, y_axis_type):
     deaths = covid19.dash_app.deaths
     population = covid19.dash_app.population
 
@@ -84,7 +85,7 @@ def create_deaths_plot(countries_to_plot, y_axis_type):
 
 @app.callback(Output("deaths-per-inf-figure", "figure"),
               [Input("deaths-countries-selector", "value")])
-def create_death_per_infected_plot(countries_to_plot):
+def deaths_per_inf_figure_figure(countries_to_plot):
     infected = covid19.dash_app.infected
     deaths = covid19.dash_app.deaths
     fig = go.Figure(

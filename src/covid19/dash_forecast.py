@@ -16,6 +16,7 @@ tab_forecast = html.Div([
             dbc.Label("Select country"),
             dcc.Dropdown(
                 id="forecast-country-selector",
+                options=covid19.dash_app.all_countries,
                 value="Norway",
                 clearable=False)
         ]), md=6),
@@ -24,9 +25,9 @@ tab_forecast = html.Div([
             dbc.Label("The day when spreading is under control"),
             dcc.Slider(
                 id="day-of-control",
-                min=30, max=120, step=10,
-                marks={i: f"{i}" for i in range(30, 121, 10)},
-                value=60),
+                min=60, max=180, step=10,
+                marks={i: f"{i}" for i in range(60, 181, 10)},
+                value=140),
         ]), md=6),
     ]),
 
@@ -37,7 +38,7 @@ tab_forecast = html.Div([
                 id="unrecorded-factor",
                 min=1, max=5, step=1,
                 marks={i: f"{i}" for i in range(1, 6)},
-                value=2),
+                value=3),
         ]), md=6),
 
         dbc.Col(dbc.FormGroup([
@@ -82,7 +83,7 @@ tab_forecast = html.Div([
 
 @app.callback(Output("forecast-country-selector", "options"),
               [Input("forecast-country-selector", "value")])
-def get_all_countries(*_):
+def forecast_country_selector_options(*_):
     return covid19.dash_app.all_countries
 
 
@@ -92,8 +93,8 @@ def get_all_countries(*_):
      Input("day-of-control", "value"),
      Input("unrecorded-factor", "value"),
      Input("recovery-days", "value")])
-def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
-                         recovery_days=14):
+def forecast_figure_figure(country, day_of_control=30, unrecorded_factor=1,
+                           recovery_days=14):
     """This creates the figure with the forecasts
     """
     infected = covid19.dash_app.infected
@@ -111,7 +112,7 @@ def create_forecast_plot(country, day_of_control=30, unrecorded_factor=1,
 
     fig = go.Figure(
             layout={
-                "title": "Forecast: Number of infected",
+                "title": "Forecast: Number of infected and ill people over time",
                 "xaxis": {
                     "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"},

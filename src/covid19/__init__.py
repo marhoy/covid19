@@ -1,3 +1,3 @@
-import covid19.dash_main
+from covid19.dash_main import server as app
 
-app = covid19.dash_main.app.server
+__all__ = ["app"]

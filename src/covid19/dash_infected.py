@@ -7,21 +7,20 @@ from dash.dependencies import Input, Output
 
 import covid19.dash_app
 
-from .dash_app import DROPDOWN_SELECTED_COUNTRIES, app
+from .dash_app import app
 from .data import DAY_ZERO_START
 
 tab_infected = html.Div([
-    html.H2("Compare development in different countries"),
     dbc.Row([
         dbc.Col(dbc.FormGroup([
             dbc.Label("Select one or more countries"),
             dcc.Dropdown(
                 id="infected-countries-selector",
-                value=DROPDOWN_SELECTED_COUNTRIES,
+                options=covid19.dash_app.all_countries,
+                value=covid19.dash_app.DROPDOWN_SELECTED_COUNTRIES,
                 multi=True,
                 clearable=False)
         ]), md=6),
-
         dbc.Col(dbc.FormGroup([
             dbc.Label("Select plot scale"),
             dbc.RadioItems(
@@ -36,9 +35,8 @@ tab_infected = html.Div([
     ]),
 
     dbc.Row([
-        dbc.Col(dcc.Graph(id='infected-figure'), md=12, className="mb-4")
+        dbc.Col(dcc.Graph(id='infected-per-pop-figure'), md=12)
     ]),
-
 
     html.H2("Interactive map showing world status", className="mt-4 mb-4"),
 
@@ -46,6 +44,7 @@ tab_infected = html.Div([
         dcc.Graph(id='infected-map'),
         md=12, className="mb-4")
     ),
+
     dbc.Row(dbc.Col(
         dbc.FormGroup([
             dbc.Label("Select date. The labels are week numbers in 2020, with the "
@@ -61,7 +60,7 @@ tab_infected = html.Div([
                     for date in pd.date_range(
                         start=covid19.dash_app.infected_raw.index[0],
                         end=covid19.dash_app.infected_raw.index[-1], freq="W-MON")
-                    }
+                }
             )
         ]), md=6)
     )
@@ -71,36 +70,34 @@ tab_infected = html.Div([
 
 @app.callback(Output("infected-countries-selector", "options"),
               [Input("infected-countries-selector", "value")])
-def get_all_countries(*_):
+def infected_countries_selector_options(*_):
     return covid19.dash_app.all_countries
 
 
-@app.callback(
-    Output("infected-figure", "figure"),
-    [Input("infected-countries-selector", "value"),
-     Input("infected-plot-scale", "value")])
-def create_infected_plot(countries_to_plot, y_axis_type):
+@app.callback(Output("infected-per-pop-figure", "figure"),
+              [Input("infected-countries-selector", "value"),
+              Input("infected-plot-scale", "value")])
+def infected_per_pop_figure_figure(countries_to_plot, y_axis_type):
     infected = covid19.dash_app.infected
     population = covid19.dash_app.population
-    inf_per_pop = infected / population.loc[infected.columns, "Population"] * 100_000
 
     fig = go.Figure(
         layout={
-            "title": "Confirmed infected per population size",
+            "title": "Infected per population size",
             "xaxis": {
                 "title":
                     f"Days since more that {DAY_ZERO_START} people confirmed infected"
             },
             "yaxis": {
                 "title":
-                    f"Confirmed infected per 100.000 population",
+                    f"Infected per 100.000 population",
                 "type": y_axis_type
             },
-            "margin": dict(t=30, b=30, l=10, r=10)
         }
     )
     for country in countries_to_plot:
-        data = inf_per_pop[country].dropna()
+        data = infected[country].dropna() / population.loc[country, "Population"] * \
+               100_000
         fig.add_trace(go.Scatter(
             x=data.index,
             y=data.values,
@@ -112,7 +109,7 @@ def create_infected_plot(countries_to_plot, y_axis_type):
 
 @app.callback(Output("infected-map", "figure"),
               [Input("infected-map-date", "value")])
-def create_infected_map(idx):
+def infected_map_figure(idx):
     infected_raw = covid19.dash_app.infected_raw
     population = covid19.dash_app.population
     inf_at_date = infected_raw.iloc[idx]
@@ -122,12 +119,18 @@ def create_infected_map(idx):
     df = pd.concat([population, inf_at_date], axis=1, join="inner")
     df["Inf/Pop"] = df["Infected"] / df["Population"] * 100_000
 
+    df["text"] = "<b>" + df["Country"] + "</b><br><br>Total infected: " + \
+        df["Infected"].apply(lambda x: f"{x:,.0f}") + \
+        "<br>Population: " + df["Population"].apply(lambda x: f"{x:,.0f}") + \
+        "<br>Inf. per pop.: " + df["Inf/Pop"].apply(lambda x: f"{x:,.1f}")
+
     fig = go.Figure(data=go.Choropleth(
         locations=df["ISO3"],
         z=round(df["Inf/Pop"]),
         zmax=50,
         zmin=0,
-        text=df["Country"],
+        text=df["text"],
+        hovertemplate="%{text}<extra></extra>",
         colorscale="Reds",
         marker_line_color="darkgray",
         marker_line_width=0.5,
