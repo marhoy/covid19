@@ -11,11 +11,12 @@ import requests_cache
 requests_cache.install_cache(expire_after=datetime.timedelta(seconds=60))
 
 INFECTED_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master" \
-                  r"/csse_covid_19_data/csse_covid_19_time_series/time_series_19" \
-                  r"-covid-Confirmed.csv"
+                  r"/csse_covid_19_data/csse_covid_19_time_series" \
+                  r"/time_series_covid19_confirmed_global.csv"
+
 DEATHS_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master" \
-                r"/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid" \
-                r"-Deaths.csv"
+                r"/csse_covid_19_data/csse_covid_19_time_series" \
+                r"/time_series_covid19_deaths_global.csv"
 
 DATA_UPDATE_TIME = datetime.time(1, 0, tzinfo=datetime.timezone.utc)
 DAY_ZERO_START = 20
@@ -155,8 +156,8 @@ def data_timestamp():
     """Returns the timestamp of the last commit to the .csv-file"""
     r = requests.get(
         r"https://api.github.com/repos/CSSEGISandData/COVID-19/commits",
-        params={"path": "csse_covid_19_data/csse_covid_19_time_series/time_series_19"
-                "-covid-Confirmed.csv"})
+        params={"path": r"csse_covid_19_data/csse_covid_19_time_series"
+                        r"/time_series_covid19_confirmed_global.csv"})
     try:
         timestamp = pd.Timestamp(r.json()[0]["commit"]["committer"]["date"])
     except KeyError:
