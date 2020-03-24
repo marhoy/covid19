@@ -43,6 +43,13 @@ def preprocess_covid_dataframe(data):
         "Congo (Kinshasa)": "Congo",
     })
 
+    # Treat Greenland as a separate country
+    data.loc[data["Province/State"] == "Greenland", "Country/Region"] = "Greenland"
+    # data.loc[
+    #     data["Province/State"] == "Faroe Islands", "Country/Region"] = "Faroe Islands"
+    # data.loc[
+    #     data["Province/State"] == "French Guiana", "Country/Region"] = "French Guiana"
+
     # Append Hubei in China as a separate country
     hubei = data[data["Province/State"] == "Hubei"].copy()
     hubei.at[:, "Country/Region"] = "China - Hubei"
@@ -67,11 +74,10 @@ def preprocess_covid_dataframe(data):
         "North Macedonia": "Macedonia",
     })
 
+    data = data.sort_index()
     data = data.drop(["Lat", "Long"], axis=1).T
     data.index = pd.to_datetime(data.index)
-    # data = data.reset_index(drop=True)
-    # data.index.name = "Day"
-    # data = data.sort_index()
+    data.index.name = "Date"
 
     return data
 
