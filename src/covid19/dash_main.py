@@ -14,12 +14,13 @@ from .dash_footer import footer
 app.layout = dbc.Container(
     dbc.Row(dbc.Col(
         [
-            html.H1("COVID-19: Current status and possible future",
-                    className="mt-4 mb-4"),
             dcc.Interval(
                 id='interval-component',
                 interval=600*1000,  # 10 minutes
                 n_intervals=0),
+
+            html.H1("COVID-19: Current status and possible future",
+                    className="mt-4 mb-4"),
             html.Div(id="live-update-text"),
             dbc.Tabs(
                 [
