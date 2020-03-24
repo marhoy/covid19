@@ -27,7 +27,7 @@ tab_forecast = html.Div([
                 id="day-of-control",
                 min=60, max=180, step=10,
                 marks={i: f"{i}" for i in range(60, 181, 10)},
-                value=140),
+                value=120),
         ]), md=6),
     ]),
 
