@@ -49,7 +49,17 @@ tab_infected = html.Div([
         dbc.FormGroup([
             dbc.Label("Select date. The labels are week numbers in 2020, with the "
                       "mark on the Monday of that week."),
-            dcc.Slider(
+            html.Div(id="infected-map-slider-div"),
+         ]), md=6)
+    )
+
+])
+
+
+@app.callback(Output("infected-map-slider-div", "children"),
+              [Input("interval-component", "n_intervals")])
+def infected_map_slider_div_children(*_):
+    slider = dcc.Slider(
                 id="infected-map-date",
                 min=0,
                 max=len(covid19.dash_app.infected_raw) - 1,
@@ -62,10 +72,7 @@ tab_infected = html.Div([
                         end=covid19.dash_app.infected_raw.index[-1], freq="W-MON")
                 }
             )
-        ]), md=6)
-    )
-
-])
+    return [slider]
 
 
 @app.callback(Output("infected-countries-selector", "options"),
@@ -127,7 +134,7 @@ def infected_map_figure(idx):
     fig = go.Figure(data=go.Choropleth(
         locations=df["ISO3"],
         z=round(df["Inf/Pop"]),
-        zmax=50,
+        zmax=100,
         zmin=0,
         text=df["text"],
         hovertemplate="%{text}<extra></extra>",
@@ -149,6 +156,6 @@ def infected_map_figure(idx):
                 "lat": 20,
             }
         },
-        margin=dict(t=30, b=10, l=0, r=0),
+        margin=dict(t=30, b=10, l=0, r=0),  # noqa: E741
     )
     return fig

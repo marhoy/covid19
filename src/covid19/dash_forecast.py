@@ -132,7 +132,7 @@ def forecast_figure_figure(country, day_of_control, unrecorded_factor,
                 "yaxis": {
                     "type": y_axis_type
                 },
-                "margin": dict(t=40, l=20, r=20)
+                "margin": dict(t=40, l=20, r=20)  # noqa: E741
             }
     )
     fig.add_trace(go.Scatter(
