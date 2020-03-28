@@ -6,17 +6,22 @@ from dash.dependencies import Input, Output
 
 import covid19.data
 
-app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],
-                meta_tags=[
-                    {'name': 'viewport',
-                     'content': 'width=device-width, initial-scale=1'}
-                ],
-                suppress_callback_exceptions=True)
+app = dash.Dash(
+    external_stylesheets=[dbc.themes.CERULEAN],
+    meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
+    suppress_callback_exceptions=True,
+)
 app.title = "Corona Dashboard"
 
 DROPDOWN_SELECTED_COUNTRIES = [
-    "Norway", "Italy", "Spain", "Portugal", "France", "Germany",
-    "United Kingdom", "United States of America"
+    "Norway",
+    "Italy",
+    "Spain",
+    "Portugal",
+    "France",
+    "Germany",
+    "United Kingdom",
+    "United States of America",
 ]
 
 # We store all the data as global variables, and update them below
@@ -26,8 +31,10 @@ all_countries = [{"label": country, "value": country} for country in infected.co
 
 
 # Periodically update the value of the global variables
-@app.callback(Output("live-update-text", "children"),
-              [Input("interval-component", "n_intervals")])
+@app.callback(
+    Output("live-update-text", "children"),
+    [Input("interval-component", "n_intervals")],
+)
 def live_update_text_children(_):
 
     # We store all the data as global variables, and update them here

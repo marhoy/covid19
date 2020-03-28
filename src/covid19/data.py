@@ -10,13 +10,17 @@ import requests_cache
 # Use caching of requests
 requests_cache.install_cache(expire_after=datetime.timedelta(seconds=60))
 
-INFECTED_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master" \
-                  r"/csse_covid_19_data/csse_covid_19_time_series" \
-                  r"/time_series_covid19_confirmed_global.csv"
+INFECTED_SOURCE = (
+    r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master"
+    r"/csse_covid_19_data/csse_covid_19_time_series"
+    r"/time_series_covid19_confirmed_global.csv"
+)
 
-DEATHS_SOURCE = r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master" \
-                r"/csse_covid_19_data/csse_covid_19_time_series" \
-                r"/time_series_covid19_deaths_global.csv"
+DEATHS_SOURCE = (
+    r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master"
+    r"/csse_covid_19_data/csse_covid_19_time_series"
+    r"/time_series_covid19_deaths_global.csv"
+)
 
 DATA_UPDATE_TIME = datetime.time(1, 0, tzinfo=datetime.timezone.utc)
 DAY_ZERO_START = 20
@@ -24,24 +28,23 @@ DAY_ZERO_START = 20
 
 def download_infected():
     response = requests.get(INFECTED_SOURCE)
-    buffer = io.StringIO(response.content.decode('UTF-8'))
+    buffer = io.StringIO(response.content.decode("UTF-8"))
     data = pd.read_csv(buffer)
     return preprocess_covid_dataframe(data)
 
 
 def download_deaths():
     response = requests.get(DEATHS_SOURCE)
-    buffer = io.StringIO(response.content.decode('UTF-8'))
+    buffer = io.StringIO(response.content.decode("UTF-8"))
     data = pd.read_csv(buffer)
     return preprocess_covid_dataframe(data)
 
 
 def preprocess_covid_dataframe(data):
     # Rename some countries before we groupby and sum
-    data["Country/Region"] = data["Country/Region"].replace({
-        "Congo (Brazzaville)": "Congo",
-        "Congo (Kinshasa)": "Congo",
-    })
+    data["Country/Region"] = data["Country/Region"].replace(
+        {"Congo (Brazzaville)": "Congo", "Congo (Kinshasa)": "Congo"}
+    )
 
     # Treat Greenland as a separate country
     data.loc[data["Province/State"] == "Greenland", "Country/Region"] = "Greenland"
@@ -64,15 +67,17 @@ def preprocess_covid_dataframe(data):
     data = data.append(china_others)
 
     # Rename some countries to match with the population data
-    data = data.rename({
-        "Bahamas, The": "Bahamas",
-        "Cote d'Ivoire": "Côte d'Ivoire",
-        "Gambia, The": "Gambia",
-        "US": "United States of America",
-        "Korea, South": "South Korea",
-        "Taiwan*": "Taiwan",
-        "North Macedonia": "Macedonia",
-    })
+    data = data.rename(
+        {
+            "Bahamas, The": "Bahamas",
+            "Cote d'Ivoire": "Côte d'Ivoire",
+            "Gambia, The": "Gambia",
+            "US": "United States of America",
+            "Korea, South": "South Korea",
+            "Taiwan*": "Taiwan",
+            "North Macedonia": "Macedonia",
+        }
+    )
 
     data = data.sort_index()
     data = data.drop(["Lat", "Long"], axis=1).T
@@ -87,28 +92,32 @@ def get_population():
         countries = pd.read_csv(file, index_col=False)
 
     # Simplify some country names
-    countries["Country"] = countries["Country"].replace({
-        "Bolivia (Plurinational State of)": "Bolivia",
-        "Brunei Darussalam": "Brunei",
-        "Iran (Islamic Republic of)": "Iran",
-        "Republic of Korea": "South Korea",
-        "Republic of Moldova": "Moldova",
-        "North Macedonia": "Macedonia",
-        "Russian Federation": "Russia",
-        "China, Taiwan Province of China": "Taiwan",
-        "United Republic of Tanzania": "Tanzania",
-        "Venezuela (Bolivarian Republic of)": "Venezuela",
-        "Viet Nam": "Vietnam"
-    })
+    countries["Country"] = countries["Country"].replace(
+        {
+            "Bolivia (Plurinational State of)": "Bolivia",
+            "Brunei Darussalam": "Brunei",
+            "Iran (Islamic Republic of)": "Iran",
+            "Republic of Korea": "South Korea",
+            "Republic of Moldova": "Moldova",
+            "North Macedonia": "Macedonia",
+            "Russian Federation": "Russia",
+            "China, Taiwan Province of China": "Taiwan",
+            "United Republic of Tanzania": "Tanzania",
+            "Venezuela (Bolivarian Republic of)": "Venezuela",
+            "Viet Nam": "Vietnam",
+        }
+    )
     countries.index = countries["Country"]
 
     # Add Hubei in China as a separate country
     countries.loc["China - Hubei", "Population"] = 58_500_000
     countries.loc["China - Hubei", "PopulationDensity"] = 58_500_000 / 185_900
-    countries.loc["China - Others", "Population"] = \
+    countries.loc["China - Others", "Population"] = (
         countries.loc["China", "Population"] - 58_500_000
-    countries.loc["China - Others", "PopulationDensity"] = \
-        countries.loc["China - Others", "Population"] / (9_597_000 - 185_900)
+    )
+    countries.loc["China - Others", "PopulationDensity"] = countries.loc[
+        "China - Others", "Population"
+    ] / (9_597_000 - 185_900)
 
     countries = countries.sort_index()
 
@@ -162,8 +171,11 @@ def data_timestamp():
     """Returns the timestamp of the last commit to the .csv-file"""
     r = requests.get(
         r"https://api.github.com/repos/CSSEGISandData/COVID-19/commits",
-        params={"path": r"csse_covid_19_data/csse_covid_19_time_series"
-                        r"/time_series_covid19_confirmed_global.csv"})
+        params={
+            "path": r"csse_covid_19_data/csse_covid_19_time_series"
+            r"/time_series_covid19_confirmed_global.csv"
+        },
+    )
     try:
         timestamp = pd.Timestamp(r.json()[0]["commit"]["committer"]["date"])
     except KeyError:
