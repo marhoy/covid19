@@ -15,7 +15,7 @@ app = dash.Dash(external_stylesheets=[dbc.themes.CERULEAN],
 app.title = "Corona Dashboard"
 
 DROPDOWN_SELECTED_COUNTRIES = [
-    "Norway", "Italy", "Spain", "France", "Germany",
+    "Norway", "Italy", "Spain", "Portugal", "France", "Germany",
     "United Kingdom", "United States of America"
 ]
 
