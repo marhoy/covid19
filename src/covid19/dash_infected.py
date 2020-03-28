@@ -16,10 +16,11 @@ tab_infected = html.Div([
             dbc.Label("Select one or more countries"),
             dcc.Dropdown(
                 id="infected-countries-selector",
-                options=covid19.dash_app.all_countries,
                 value=covid19.dash_app.DROPDOWN_SELECTED_COUNTRIES,
+                # options=covid19.dash_app.all_countries,
                 multi=True,
-                clearable=False)
+                clearable=False,
+            ),
         ]), md=6),
         dbc.Col(dbc.FormGroup([
             dbc.Label("Select plot scale"),
@@ -60,23 +61,24 @@ tab_infected = html.Div([
               [Input("interval-component", "n_intervals")])
 def infected_map_slider_div_children(*_):
     slider = dcc.Slider(
-                id="infected-map-date",
-                min=0,
-                max=len(covid19.dash_app.infected_raw) - 1,
-                step=1,
-                value=len(covid19.dash_app.infected_raw) - 1,
-                marks={
-                    covid19.dash_app.infected_raw.index.get_loc(date): f"{date.week}"
-                    for date in pd.date_range(
-                        start=covid19.dash_app.infected_raw.index[0],
-                        end=covid19.dash_app.infected_raw.index[-1], freq="W-MON")
-                }
-            )
+        id="infected-map-date",
+        min=0,
+        max=len(covid19.dash_app.infected_raw) - 1,
+        step=1,
+        value=len(covid19.dash_app.infected_raw) - 1,
+        marks={
+            covid19.dash_app.infected_raw.index.get_loc(date): f"{date.week}"
+            for date in pd.date_range(
+                start=covid19.dash_app.infected_raw.index[0],
+                end=covid19.dash_app.infected_raw.index[-1], freq="W-MON")
+        }
+    )
     return [slider]
 
 
+# Update the options of the country-selector
 @app.callback(Output("infected-countries-selector", "options"),
-              [Input("infected-countries-selector", "value")])
+              [Input("interval-component", "n_intervals")])
 def infected_countries_selector_options(*_):
     return covid19.dash_app.all_countries
 

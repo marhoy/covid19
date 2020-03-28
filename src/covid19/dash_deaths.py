@@ -15,10 +15,11 @@ tab_deaths = html.Div([
             dbc.Label("Select one or more countries"),
             dcc.Dropdown(
                 id="deaths-countries-selector",
-                # options=covid19.dash_app.all_countries,
                 value=covid19.dash_app.DROPDOWN_SELECTED_COUNTRIES,
+                # options=covid19.dash_app.all_countries,
                 multi=True,
-                clearable=False)
+                clearable=False
+            ),
         ]), md=6),
         dbc.Col(dbc.FormGroup([
             dbc.Label("Select plot scale"),
@@ -43,8 +44,9 @@ tab_deaths = html.Div([
 ])
 
 
+# Update the options of the country-selector
 @app.callback(Output("deaths-countries-selector", "options"),
-              [Input("deaths-countries-selector", "value")])
+              [Input("interval-component", "n_intervals")])
 def deaths_countries_selector_options(*_):
     return covid19.dash_app.all_countries
 
