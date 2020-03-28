@@ -33,30 +33,31 @@ app.layout = dbc.Container(
             dcc.Tabs(
                 id="tabs",
                 value="tab-infected",
-                # active_tab="tab-infected",
                 className="mb-4",
                 children=[
                     dcc.Tab(
                         label="Infected",
                         value="tab-infected",
-                        # labelClassName="h3 mb-0",
-                        children=[covid19.dash_infected.tab_infected]
+                        className="h3",
+                        selected_className="bg-primary",
+                        children=[covid19.dash_infected.tab_infected],
                     ),
                     dcc.Tab(
                         label="Deaths",
                         value="tab-deaths",
-                        # labelClassName="h3 mb-0",
+                        className="h3",
+                        selected_className="bg-primary",
                         children=[covid19.dash_deaths.tab_deaths]
                     ),
                     dcc.Tab(
                         label="Forecast",
                         value="tab-forecast",
-                        # labelClassName="h3 mb-0",
+                        className="h3",
+                        selected_className="bg-primary",
                         children=[covid19.dash_forecast.tab_forecast]
                     ),
                 ],
             ),
-            # html.Div(id="tabs-content"),
 
             footer
         ]
@@ -66,31 +67,17 @@ app.layout = dbc.Container(
 server = app.server
 
 
-# # This function activates the selected tab
-# @app.callback(Output('tabs-content', 'children'),
-#               [Input('tabs', 'active_tab')])
-# def tabs_content_children(tab):
-#     if tab == 'tab-infected':
-#         return covid19.dash_infected.tab_infected
-#     elif tab == 'tab-deaths':
-#         return covid19.dash_deaths.tab_deaths
-#     elif tab == 'tab-forecast':
-#         return covid19.dash_forecast.tab_forecast
-
-
 # When one of the dropdown menus changes, store the value
 @app.callback(Output('multiple-countries-selector-store', 'data'),
               [Input('infected-countries-selector', 'value'),
                Input('deaths-countries-selector', 'value')],
               [State('tabs', 'value')])
 def store_dropdown_value(infected_selected, deaths_selected, tab):
-    print(f"Storing values from {tab}:", infected_selected, deaths_selected, "\n")
     if tab == 'tab-infected':
         return infected_selected
     elif tab == 'tab-deaths':
         return deaths_selected
     else:
-        print("Unhandled tab value:", tab)
         raise PreventUpdate
 
 
@@ -100,5 +87,4 @@ def store_dropdown_value(infected_selected, deaths_selected, tab):
               [Input('tabs', 'value')],
               [State('multiple-countries-selector-store', 'data')])
 def synchronize_dropdowns(tab, store):
-    print("Setting value of dropdowns:", tab, store, "\n")
     return store, store
