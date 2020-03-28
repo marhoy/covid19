@@ -24,6 +24,7 @@ RUN poetry install --no-dev -E gunicorn
 
 # Copy necessary files to container
 COPY --chown=$USERNAME:$USERNAME src ./src
+COPY --chown=$USERNAME:$USERNAME app.py .
 
 # Install this package as well
 RUN poetry install --no-dev
@@ -33,4 +34,4 @@ EXPOSE 5000
 
 # Run gunicorn
 ENTRYPOINT ["poetry", "run"]
-CMD ["gunicorn", "-c", "src/gunicorn_config.py", "covid19:app"]
+CMD ["gunicorn", "-c", "src/gunicorn_config.py", "app:server"]
