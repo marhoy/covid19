@@ -1,3 +1,6 @@
+"""The dash-tab with forecast data."""
+from typing import List
+
 import covid19.forecast
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -135,9 +138,14 @@ tab_forecast = html.Div(
 
 @app.callback(
     Output("forecast-country-selector", "options"),
-    [Input("forecast-country-selector", "value")],
+    [Input("interval-component", "n_intervals")],
 )
-def forecast_country_selector_options(*_):
+def forecast_country_selector_options(*_) -> List[dict]:
+    """Scheduled update of dropdown options.
+
+    Returns:
+        List[dict]: All countries.
+    """
     return covid19.dash_app.all_countries
 
 
@@ -154,8 +162,7 @@ def forecast_country_selector_options(*_):
 def forecast_figure_figure(
     country, day_of_control, unrecorded_factor, recovery_days, y_axis_type
 ):
-    """This creates the figure with the forecasts
-    """
+    """Create figure with the forecasts."""
     infected = covid19.dash_app.infected
 
     observed_data, forecast, being_ill = covid19.forecast.create_forecast(

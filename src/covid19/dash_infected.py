@@ -1,3 +1,4 @@
+"""Create the tab with infection data."""
 import covid19.dash_app
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -72,6 +73,7 @@ tab_infected = html.Div(
     [Input("interval-component", "n_intervals")],
 )
 def infected_map_slider_div_children(*_):
+    """Create the slider for date-selection of map data."""
     slider = dcc.Slider(
         id="infected-map-date",
         min=0,
@@ -90,12 +92,12 @@ def infected_map_slider_div_children(*_):
     return [slider]
 
 
-# Update the options of the country-selector
 @app.callback(
     Output("infected-countries-selector", "options"),
     [Input("interval-component", "n_intervals")],
 )
 def infected_countries_selector_options(*_):
+    """Scheduled update of the options of the country-selector."""
     return covid19.dash_app.all_countries
 
 
@@ -107,6 +109,7 @@ def infected_countries_selector_options(*_):
     ],
 )
 def infected_per_pop_figure_figure(countries_to_plot, y_axis_type):
+    """Update the infected-per-pop figure when the input changes."""
     infected = covid19.dash_app.infected
     population = covid19.dash_app.population
 
@@ -135,6 +138,7 @@ def infected_per_pop_figure_figure(countries_to_plot, y_axis_type):
 
 @app.callback(Output("infected-map", "figure"), [Input("infected-map-date", "value")])
 def infected_map_figure(idx):
+    """When the date-slider-value changes, update the map."""
     infected_raw = covid19.dash_app.infected_raw
     population = covid19.dash_app.population
     inf_at_date = infected_raw.iloc[idx]

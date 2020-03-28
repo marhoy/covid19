@@ -1,3 +1,4 @@
+"""Define the layout of the app."""
 import covid19.dash_deaths
 import covid19.dash_forecast
 import covid19.dash_infected
@@ -78,6 +79,7 @@ server = app.server
     [State("tabs", "value")],
 )
 def store_dropdown_value(infected_selected, deaths_selected, tab):
+    """When the tab changes, store the selected countries."""
     if tab == "tab-infected":
         return infected_selected
     elif tab == "tab-deaths":
@@ -86,7 +88,6 @@ def store_dropdown_value(infected_selected, deaths_selected, tab):
         raise PreventUpdate
 
 
-# Update the value of the dropdown menus when changing tab
 @app.callback(
     [
         Output("infected-countries-selector", "value"),
@@ -96,4 +97,5 @@ def store_dropdown_value(infected_selected, deaths_selected, tab):
     [State("multiple-countries-selector-store", "data")],
 )
 def synchronize_dropdowns(tab, store):
+    """When the data store changes, update the selected countries."""
     return store, store

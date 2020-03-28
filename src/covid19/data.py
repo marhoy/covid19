@@ -1,3 +1,4 @@
+"""Get data and preprocess."""
 import datetime
 import io
 from importlib import resources
@@ -26,21 +27,24 @@ DATA_UPDATE_TIME = datetime.time(1, 0, tzinfo=datetime.timezone.utc)
 DAY_ZERO_START = 20
 
 
-def download_infected():
+def download_infected() -> pd.DataFrame:
+    """Download and preprocess infection data."""
     response = requests.get(INFECTED_SOURCE)
     buffer = io.StringIO(response.content.decode("UTF-8"))
     data = pd.read_csv(buffer)
     return preprocess_covid_dataframe(data)
 
 
-def download_deaths():
+def download_deaths() -> pd.DataFrame:
+    """Download and preprocess deaths data."""
     response = requests.get(DEATHS_SOURCE)
     buffer = io.StringIO(response.content.decode("UTF-8"))
     data = pd.read_csv(buffer)
     return preprocess_covid_dataframe(data)
 
 
-def preprocess_covid_dataframe(data):
+def preprocess_covid_dataframe(data: pd.DataFrame) -> pd.DataFrame:
+    """Preprocess the downloaded dataframe."""
     # Rename some countries before we groupby and sum
     data["Country/Region"] = data["Country/Region"].replace(
         {"Congo (Brazzaville)": "Congo", "Congo (Kinshasa)": "Congo"}
@@ -87,7 +91,8 @@ def preprocess_covid_dataframe(data):
     return data
 
 
-def get_population():
+def get_population() -> pd.DataFrame:
+    """Load population data from disk and preprocess."""
     with resources.path("covid19.resources", "world_population.csv") as file:
         countries = pd.read_csv(file, index_col=False)
 
@@ -125,6 +130,7 @@ def get_population():
 
 
 def get_shifted_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Define a start date and shift each timeseries."""
     infected_all = download_infected()
     deaths_all = download_deaths()
     population = get_population()
@@ -152,23 +158,11 @@ def get_shifted_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     infected = pd.DataFrame(infected).T
     deaths = pd.DataFrame(deaths).T
 
-    # # Infected per population
-    # inf_per_pop = pd.DataFrame(
-    #     [infected[country] / population.loc[country, "Population"] for country in
-    #      infected]).T
-    # inf_per_pop *= 100_000
-    #
-    # # Dead per population
-    # dea_per_pop = pd.DataFrame(
-    #     [deaths[country] / population.loc[country, "Population"] for country in
-    #      deaths]).T
-    # dea_per_pop *= 100_000
-
     return infected, deaths, population
 
 
-def data_timestamp():
-    """Returns the timestamp of the last commit to the .csv-file"""
+def data_timestamp() -> pd.Timestamp:
+    """Return the timestamp of the last commit to the .csv-file."""
     r = requests.get(
         r"https://api.github.com/repos/CSSEGISandData/COVID-19/commits",
         params={

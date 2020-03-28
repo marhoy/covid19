@@ -1,3 +1,4 @@
+"""Create and configure the Dash App."""
 import covid19.data
 import dash
 import dash_bootstrap_components as dbc
@@ -34,8 +35,12 @@ all_countries = [{"label": country, "value": country} for country in infected.co
     Output("live-update-text", "children"),
     [Input("interval-component", "n_intervals")],
 )
-def live_update_text_children(_):
+def live_update_text_children(*_):
+    """Update global data and last-updated-text.
 
+    Returns:
+        HTML text with last-updated-info.
+    """
     # We store all the data as global variables, and update them here
     global infected, deaths, population, infected_raw, all_countries
     infected, deaths, population = covid19.data.get_shifted_data()

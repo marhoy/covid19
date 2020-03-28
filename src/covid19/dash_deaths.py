@@ -1,3 +1,4 @@
+"""Create the tab with deaths."""
 import covid19.dash_app
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -57,6 +58,7 @@ tab_deaths = html.Div(
     [Input("interval-component", "n_intervals")],
 )
 def deaths_countries_selector_options(*_):
+    """Scheduled update of the possible countries."""
     return covid19.dash_app.all_countries
 
 
@@ -65,6 +67,7 @@ def deaths_countries_selector_options(*_):
     [Input("deaths-countries-selector", "value"), Input("deaths-plot-scale", "value")],
 )
 def deaths_per_pop_figure_figure(countries_to_plot, y_axis_type):
+    """Create the death-per-pop figure."""
     deaths = covid19.dash_app.deaths
     population = covid19.dash_app.population
 
@@ -95,6 +98,7 @@ def deaths_per_pop_figure_figure(countries_to_plot, y_axis_type):
     [Input("deaths-countries-selector", "value")],
 )
 def deaths_per_inf_figure_figure(countries_to_plot):
+    """Create the figure with Case Fatality Rate."""
     infected = covid19.dash_app.infected
     deaths = covid19.dash_app.deaths
     fig = go.Figure(
