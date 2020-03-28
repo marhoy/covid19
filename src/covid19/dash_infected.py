@@ -158,6 +158,6 @@ def infected_map_figure(idx):
                 "lat": 20,
             }
         },
-        margin=dict(t=30, b=10, l=0, r=0),  # noqa: E741
+        margin=dict(t=80, b=10, l=0, r=0),  # noqa: E741
     )
     return fig
