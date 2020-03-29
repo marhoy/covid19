@@ -27,6 +27,7 @@ The server will then be available on http://localhost:8050
 ```bash
 poetry install -E gunicorn
 poetry run gunicorn app:server -b :5000
+The server will then be available on http://localhost:5000
 ```
 
 # Deploy to Docker
