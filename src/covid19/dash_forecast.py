@@ -189,7 +189,7 @@ def forecast_figure_figure(
                 f" people confirmed infected"
             },
             "yaxis": {"type": y_axis_type},
-            "margin": dict(t=40, l=20, r=20),  # noqa: E741
+            "margin": {"l": 0, "r": 0},
         }
     )
     fig.add_trace(

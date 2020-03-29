@@ -84,7 +84,12 @@ def deaths_per_pop_figure_figure(
                     f" people confirmed infected"
                 )
             },
-            "yaxis": {"title": f"Deaths per 100.000 population", "type": y_axis_type},
+            "yaxis": {
+                "title": f"Deaths per 100.000 population",
+                "type": y_axis_type,
+                "hoverformat": ".1f",
+            },
+            "margin": {"l": 0, "r": 0},
         }
     )
     for country in countries_to_plot:
@@ -112,7 +117,8 @@ def deaths_per_inf_figure_figure(countries_to_plot: List[str]) -> go.Figure:
                 "title": f"Days since more that {DAY_ZERO_START}"
                 " people confirmed infected"
             },
-            "yaxis": {"title": f"Deaths per infected (CFR)"},
+            "yaxis": {"title": f"Deaths per infected (CFR)", "hoverformat": ".3f"},
+            "margin": {"l": 0, "r": 0},
         }
     )
     for country in countries_to_plot:

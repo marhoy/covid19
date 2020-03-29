@@ -127,7 +127,9 @@ def infected_per_pop_figure_figure(
             "yaxis": {
                 "title": f"Infected per 100.000 population",
                 "type": y_axis_type,
+                "hoverformat": ".1f",
             },
+            "margin": {"l": 0, "r": 0},
         }
     )
     for country in countries_to_plot:
@@ -166,7 +168,7 @@ def infected_map_figure(idx: int) -> go.Figure:
     fig = go.Figure(
         data=go.Choropleth(
             locations=df["ISO3"],
-            z=round(df["Inf/Pop"]),
+            z=df["Inf/Pop"].round(decimals=0),
             zmax=100,
             zmin=0,
             text=df["text"],
@@ -174,17 +176,17 @@ def infected_map_figure(idx: int) -> go.Figure:
             colorscale="Reds",
             marker_line_color="darkgray",
             marker_line_width=0.5,
-        )
+        ),
+        layout={
+            "title": "COVID-19 Confirmed infected per 100.000 population",
+            "margin": {"l": 0, "r": 0, "b": 10},
+            "geo": {
+                "showframe": False,
+                "showcoastlines": False,
+                "projection": {"scale": 1.2},
+                "center": {"lon": 10, "lat": 20},
+            },
+        },
     )
 
-    fig.update_layout(
-        title_text="COVID-19 Confirmed infected per 100.000 population",
-        geo={
-            "showframe": False,
-            "showcoastlines": False,
-            "projection": {"scale": 1.2},
-            "center": {"lon": 10, "lat": 20},
-        },
-        margin=dict(t=80, b=10, l=0, r=0),  # noqa: E741
-    )
     return fig
