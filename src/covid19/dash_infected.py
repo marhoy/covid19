@@ -34,14 +34,21 @@ tab_infected = html.Div(
                 dbc.Col(
                     dbc.FormGroup(
                         [
-                            dbc.Label("Select plot scale"),
-                            dbc.RadioItems(
-                                id="infected-plot-scale",
+                            dbc.Label("Plot options"),
+                            dbc.Checklist(
                                 options=[
-                                    {"value": "linear", "label": "Linear"},
-                                    {"value": "log", "label": "Logarithmic"},
+                                    {
+                                        "label": "Logarithmic scale",
+                                        "value": "log_scale",
+                                    },
+                                    {
+                                        "label": "Per population size",
+                                        "value": "per_pop_size",
+                                    },
                                 ],
-                                value="linear",
+                                value=["per_pop_size"],
+                                id="infected-plot-options",
+                                switch=True,
                             ),
                         ]
                     ),
@@ -107,35 +114,54 @@ def infected_countries_selector_options(*_) -> List[dict]:
     Output("infected-per-pop-figure", "figure"),
     [
         Input("infected-countries-selector", "value"),
-        Input("infected-plot-scale", "value"),
+        Input("infected-plot-options", "value"),
     ],
 )
 def infected_per_pop_figure_figure(
-    countries_to_plot: List[str], y_axis_type: str
+    countries_to_plot: List[str], plot_options: List[str]
 ) -> go.Figure:
     """Update the infected-per-pop figure when the input changes."""
+    # Handle plot options
+    if "log_scale" in plot_options:
+        y_axis_type = "log"
+    else:
+        y_axis_type = "linear"
+    if "per_pop_size" in plot_options:
+        fig_title = "Infected per 100.000 population"
+        y_axis_title = "Infected per 100.000"
+        hoverformat = ".1f"
+    else:
+        fig_title = "Infected people in total"
+        y_axis_title = "Infected total"
+        hoverformat = ".0f"
+
     infected = covid19.dash_app.infected
     population = covid19.dash_app.population
 
     fig = go.Figure(
         layout={
-            "title": "Infected per population size",
+            "title": fig_title,
             "xaxis": {
                 "title": f"Days since more that {DAY_ZERO_START}"
                 f" people confirmed infected"
             },
             "yaxis": {
-                "title": f"Infected per 100.000 population",
+                "title": y_axis_title,
                 "type": y_axis_type,
-                "hoverformat": ".1f",
+                "hoverformat": hoverformat,
             },
             "margin": {"l": 0, "r": 0},
         }
     )
     for country in countries_to_plot:
-        data = (
-            infected[country].dropna() / population.loc[country, "Population"] * 100_000
-        )
+        if "per_pop_size" in plot_options:
+            data = (
+                infected[country].dropna()
+                / population.loc[country, "Population"]
+                * 100_000
+            )
+        else:
+            data = infected[country].dropna()
         fig.add_trace(
             go.Scatter(x=data.index, y=data.values, name=country, mode="lines")
         )

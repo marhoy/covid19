@@ -33,14 +33,21 @@ tab_deaths = html.Div(
                 dbc.Col(
                     dbc.FormGroup(
                         [
-                            dbc.Label("Select plot scale"),
-                            dbc.RadioItems(
-                                id="deaths-plot-scale",
+                            dbc.Label("Plot options"),
+                            dbc.Checklist(
                                 options=[
-                                    {"value": "linear", "label": "Linear"},
-                                    {"value": "log", "label": "Logarithmic"},
+                                    {
+                                        "label": "Logarithmic scale",
+                                        "value": "log_scale",
+                                    },
+                                    {
+                                        "label": "Per population size",
+                                        "value": "per_pop_size",
+                                    },
                                 ],
-                                value="linear",
+                                value=["per_pop_size"],
+                                id="deaths-plot-options",
+                                switch=True,
                             ),
                         ]
                     ),
@@ -66,18 +73,35 @@ def deaths_countries_selector_options(*_) -> List[dict]:
 
 @app.callback(
     Output("deaths-per-pop-figure", "figure"),
-    [Input("deaths-countries-selector", "value"), Input("deaths-plot-scale", "value")],
+    [
+        Input("deaths-countries-selector", "value"),
+        Input("deaths-plot-options", "value"),
+    ],
 )
 def deaths_per_pop_figure_figure(
-    countries_to_plot: List[str], y_axis_type: str
+    countries_to_plot: List[str], plot_options: List[str]
 ) -> go.Figure:
     """Create the death-per-pop figure."""
+    # Handle plot options
+    if "log_scale" in plot_options:
+        y_axis_type = "log"
+    else:
+        y_axis_type = "linear"
+    if "per_pop_size" in plot_options:
+        fig_title = "Deaths per 100.000 population"
+        y_axis_title = "Deaths per 100.000"
+        hoverformat = ".1f"
+    else:
+        fig_title = "Death numbers in total"
+        y_axis_title = "Deaths total"
+        hoverformat = ".0f"
+
     deaths = covid19.dash_app.deaths
     population = covid19.dash_app.population
 
     fig = go.Figure(
         layout={
-            "title": "Deaths per population size",
+            "title": fig_title,
             "xaxis": {
                 "title": (
                     f"Days since more that {DAY_ZERO_START}"
@@ -85,17 +109,22 @@ def deaths_per_pop_figure_figure(
                 )
             },
             "yaxis": {
-                "title": f"Deaths per 100.000 population",
+                "title": y_axis_title,
                 "type": y_axis_type,
-                "hoverformat": ".1f",
+                "hoverformat": hoverformat,
             },
             "margin": {"l": 0, "r": 0},
         }
     )
     for country in countries_to_plot:
-        data = (
-            deaths[country].dropna() / population.loc[country, "Population"] * 100_000
-        )
+        if "per_pop_size" in plot_options:
+            data = (
+                deaths[country].dropna()
+                / population.loc[country, "Population"]
+                * 100_000
+            )
+        else:
+            data = deaths[country].dropna()
         fig.add_trace(
             go.Scatter(x=data.index, y=data.values, name=country, mode="lines")
         )
