@@ -9,7 +9,9 @@ import requests
 import requests_cache
 
 # Use caching of requests
-requests_cache.install_cache(expire_after=datetime.timedelta(seconds=60))
+requests_cache.install_cache(
+    expire_after=datetime.timedelta(seconds=60), backend="memory"
+)
 
 INFECTED_SOURCE = (
     r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master"
