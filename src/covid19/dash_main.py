@@ -71,7 +71,6 @@ app.layout = dbc.Container(
 server = app.server
 
 
-# When one of the dropdown menus changes, store the value
 @app.callback(
     Output("multiple-countries-selector-store", "data"),
     [
