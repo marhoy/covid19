@@ -1,4 +1,6 @@
 """Define the layout of the app."""
+from typing import Any
+
 import covid19.dash_deaths
 import covid19.dash_forecast
 import covid19.dash_infected
@@ -96,6 +98,6 @@ def store_dropdown_value(infected_selected, deaths_selected, tab):
     [Input("tabs", "value")],
     [State("multiple-countries-selector-store", "data")],
 )
-def synchronize_dropdowns(tab, store):
+def synchronize_dropdowns(tab: str, store: Any) -> Any:
     """When the data store changes, update the selected countries."""
     return store, store

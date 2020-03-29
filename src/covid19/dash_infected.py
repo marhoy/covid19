@@ -1,4 +1,6 @@
 """Create the tab with infection data."""
+from typing import List
+
 import covid19.dash_app
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -72,7 +74,7 @@ tab_infected = html.Div(
     Output("infected-map-slider-div", "children"),
     [Input("interval-component", "n_intervals")],
 )
-def infected_map_slider_div_children(*_):
+def infected_map_slider_div_children(*_) -> dcc.Slider:
     """Create the slider for date-selection of map data."""
     slider = dcc.Slider(
         id="infected-map-date",
@@ -96,7 +98,7 @@ def infected_map_slider_div_children(*_):
     Output("infected-countries-selector", "options"),
     [Input("interval-component", "n_intervals")],
 )
-def infected_countries_selector_options(*_):
+def infected_countries_selector_options(*_) -> List[dict]:
     """Scheduled update of the options of the country-selector."""
     return covid19.dash_app.all_countries
 
@@ -108,7 +110,9 @@ def infected_countries_selector_options(*_):
         Input("infected-plot-scale", "value"),
     ],
 )
-def infected_per_pop_figure_figure(countries_to_plot, y_axis_type):
+def infected_per_pop_figure_figure(
+    countries_to_plot: List[str], y_axis_type: str
+) -> go.Figure:
     """Update the infected-per-pop figure when the input changes."""
     infected = covid19.dash_app.infected
     population = covid19.dash_app.population
@@ -137,7 +141,7 @@ def infected_per_pop_figure_figure(countries_to_plot, y_axis_type):
 
 
 @app.callback(Output("infected-map", "figure"), [Input("infected-map-date", "value")])
-def infected_map_figure(idx):
+def infected_map_figure(idx: int) -> go.Figure:
     """When the date-slider-value changes, update the map."""
     infected_raw = covid19.dash_app.infected_raw
     population = covid19.dash_app.population

@@ -160,8 +160,12 @@ def forecast_country_selector_options(*_) -> List[dict]:
     ],
 )
 def forecast_figure_figure(
-    country, day_of_control, unrecorded_factor, recovery_days, y_axis_type
-):
+    country: str,
+    day_of_control: int,
+    unrecorded_factor: float,
+    recovery_days: int,
+    y_axis_type: str,
+) -> go.Figure:
     """Create figure with the forecasts."""
     infected = covid19.dash_app.infected
 

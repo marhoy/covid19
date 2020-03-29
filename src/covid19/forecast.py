@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-def growth_rate_exp_decay(initial_rate: float, days_until_control: int) -> np.array:
+def growth_rate_exp_decay(initial_rate: float, days_until_control: int) -> np.ndarray:
     """Calculate future growth rates.
 
     The rates decays exponentially towards 1.0.
