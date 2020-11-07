@@ -1,13 +1,14 @@
 """Create the tab with infection data."""
 from typing import List
 
-import covid19.dash_app
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
+
+import covid19.dash_app
 
 from .dash_app import app
 from .data import DAY_ZERO_START

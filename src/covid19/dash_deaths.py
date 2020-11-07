@@ -1,12 +1,13 @@
 """Create the tab with deaths."""
 from typing import List
 
-import covid19.dash_app
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
+
+import covid19.dash_app
 
 from .dash_app import app
 from .data import DAY_ZERO_START
@@ -146,7 +147,7 @@ def deaths_per_inf_figure_figure(countries_to_plot: List[str]) -> go.Figure:
                 "title": f"Days since more that {DAY_ZERO_START}"
                 " people confirmed infected"
             },
-            "yaxis": {"title": f"Deaths per infected (CFR)", "hoverformat": ".3f"},
+            "yaxis": {"title": "Deaths per infected (CFR)", "hoverformat": ".3f"},
             "margin": {"l": 0, "r": 0},
         }
     )

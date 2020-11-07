@@ -1,13 +1,14 @@
 """The dash-tab with forecast data."""
 from typing import List
 
-import covid19.forecast
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
-from covid19.data import DAY_ZERO_START
 from dash.dependencies import Input, Output
+
+import covid19.forecast
+from covid19.data import DAY_ZERO_START
 
 from .dash_app import app
 
