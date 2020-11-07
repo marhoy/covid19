@@ -1,3 +1,8 @@
-.git/
-.venv/
-notebooks/
+# Ignore everything
+*
+
+# Except...
+! pyproject.toml
+! poetry.lock
+! src
+! app.py
