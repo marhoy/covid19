@@ -50,7 +50,7 @@ You can use Docker to deploy the production server.
 docker build -t marhoy/covid .
 
 # Run docker image and forward port 5000 to host port 5001
-docker run -p 5001:5000 marhoy/covid
+docker run --rm -p 5001:5000 marhoy/covid
 
 # Push docker image to docker hub
 docker push marhoy/covid
