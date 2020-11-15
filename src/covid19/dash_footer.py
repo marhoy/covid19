@@ -14,9 +14,12 @@ footer = html.Div(
         html.H3("About the author"),
         dcc.Markdown(
             """
-        Plots and model created by [Martin Høy](mailto:martin@hoy.priv.no),
-        March 2020.
-    """
+        Created by [Martin Høy](mailto:martin@hoy.priv.no),
+        March 2020 (updated November 2020).
+
+        Code available on [GitHub](https://github.com/marhoy/covid19).
+        Docker image available on [Docker Hub](https://hub.docker.com/r/marhoy/covid).
+        """
         ),
     ]
 )

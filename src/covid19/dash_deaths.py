@@ -114,6 +114,7 @@ def deaths_per_pop_figure_figure(
                 "type": y_axis_type,
                 "hoverformat": hoverformat,
             },
+            "hovermode": "x",
             "margin": {"l": 0, "r": 0},
         }
     )
@@ -148,6 +149,7 @@ def deaths_per_inf_figure_figure(countries_to_plot: List[str]) -> go.Figure:
                 " people confirmed infected"
             },
             "yaxis": {"title": "Deaths per infected (CFR)", "hoverformat": ".3f"},
+            "hovermode": "x",
             "margin": {"l": 0, "r": 0},
         }
     )

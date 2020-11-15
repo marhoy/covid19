@@ -30,7 +30,7 @@ app.layout = dbc.Container(
                     data=covid19.dash_app.DROPDOWN_SELECTED_COUNTRIES,
                 ),
                 html.H1(
-                    "COVID-19: Current status and possible future",
+                    "COVID-19: Current status",
                     className="mt-4 mb-4",
                 ),
                 html.Div(id="live-update-text"),

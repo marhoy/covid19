@@ -1,10 +1,12 @@
 """Create the tab with infection data."""
+import itertools
 from typing import List
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
+import plotly.colors
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 
@@ -46,7 +48,6 @@ tab_infected = html.Div(
                                         "label": "Per population size",
                                         "value": "per_pop_size",
                                     },
-                                    {"label": "Growth rate", "value": "growth_rate"},
                                 ],
                                 value=["per_pop_size"],
                                 id="infected-plot-options",
@@ -58,7 +59,8 @@ tab_infected = html.Div(
                 ),
             ]
         ),
-        dbc.Row([dbc.Col(dcc.Graph(id="infected-per-pop-figure"), md=12)]),
+        dbc.Row([dbc.Col(dcc.Graph(id="infected-in-total-figure"), md=12)]),
+        dbc.Row([dbc.Col(dcc.Graph(id="infected-per-day-figure"), md=12)]),
         html.H2("Interactive map showing world status", className="mt-4 mb-4"),
         dbc.Row(dbc.Col(dcc.Graph(id="infected-map"), md=12, className="mb-4")),
         dbc.Row(
@@ -113,13 +115,13 @@ def infected_countries_selector_options(*_) -> List[dict]:
 
 
 @app.callback(
-    Output("infected-per-pop-figure", "figure"),
+    Output("infected-in-total-figure", "figure"),
     [
         Input("infected-countries-selector", "value"),
         Input("infected-plot-options", "value"),
     ],
 )
-def infected_per_pop_figure_figure(
+def infected_in_total_figure(
     countries_to_plot: List[str], plot_options: List[str]
 ) -> go.Figure:
     """Update the infected-per-pop figure when the input changes."""
@@ -128,18 +130,13 @@ def infected_per_pop_figure_figure(
         y_axis_type = "log"
     else:
         y_axis_type = "linear"
-    if "growth_rate" in plot_options:
-        fig_title = "Growth rate"
-        y_axis_title = "Growth rate"
-        hoverformat = ".3f"
-    elif "per_pop_size" in plot_options:
-        fig_title = "Infected per 100.000 population"
-        y_axis_title = "Infected per 100.000"
-        hoverformat = ".1f"
+
+    if "per_pop_size" in plot_options:
+        fig_title = "Infected in total per 100k population"
+        y_axis_title = "Infected per 100k"
     else:
         fig_title = "Infected people in total"
         y_axis_title = "Infected total"
-        hoverformat = ".0f"
 
     infected = covid19.dash_app.infected
     population = covid19.dash_app.population
@@ -148,14 +145,17 @@ def infected_per_pop_figure_figure(
         layout={
             "title": fig_title,
             "xaxis": {
-                "title": f"Days since more that {DAY_ZERO_START}"
-                f" people confirmed infected"
+                "title": (
+                    f"Days since more that {DAY_ZERO_START}"
+                    f" people confirmed infected"
+                )
             },
             "yaxis": {
                 "title": y_axis_title,
                 "type": y_axis_type,
-                "hoverformat": hoverformat,
+                "hoverformat": ",.0f",
             },
+            "hovermode": "x",
             "margin": {"l": 0, "r": 0},
         }
     )
@@ -169,15 +169,93 @@ def infected_per_pop_figure_figure(
         else:
             data = infected[country].dropna()
 
-        if "growth_rate" in plot_options:
-            data = (data / data.shift(1)).ewm(3).mean()
-
         fig.add_trace(
             go.Scatter(x=data.index, y=data.values, name=country, mode="lines")
         )
 
-    if "growth_rate" in plot_options:
-        fig.update_layout({"yaxis": {"range": [0.95, 1.6]}})
+    return fig
+
+
+@app.callback(
+    Output("infected-per-day-figure", "figure"),
+    [
+        Input("infected-countries-selector", "value"),
+        Input("infected-plot-options", "value"),
+    ],
+)
+def infected_per_day_figure(
+    countries_to_plot: List[str], plot_options: List[str]
+) -> go.Figure:
+    """Plot number of infected people per day."""
+    # Handle plot options
+    if "log_scale" in plot_options:
+        y_axis_type = "log"
+    else:
+        y_axis_type = "linear"
+
+    if "per_pop_size" in plot_options:
+        fig_title = "New infections per day per 100k population"
+        y_axis_title = "Infections per day per 100k population"
+    else:
+        fig_title = "New infections per day"
+        y_axis_title = "Infections per day"
+
+    # Get data
+    infected = covid19.dash_app.infected_raw.diff()
+    population = covid19.dash_app.population
+
+    fig = go.Figure(
+        layout={
+            "title": fig_title,
+            "xaxis": {"title": "Date"},
+            "yaxis": {
+                "title": y_axis_title,
+                "type": y_axis_type,
+                "hoverformat": ",.0f",
+            },
+            "hovermode": "x",
+            "margin": {"l": 0, "r": 0},
+            "legend": {"tracegroupgap": 0},
+        }
+    )
+
+    for country, color in zip(
+        countries_to_plot, itertools.cycle(plotly.colors.qualitative.Plotly)
+    ):
+        if "per_pop_size" in plot_options:
+            data = (
+                infected[country].replace(0, pd.NA).dropna()
+                / population.loc[country, "Population"]
+                * 100_000
+            )
+        else:
+            data = infected[country].replace(0, pd.NA).dropna()
+
+        line = data.rolling(window=pd.Timedelta("7d")).mean()
+
+        fig.add_trace(
+            go.Scatter(
+                x=data.index,
+                y=data.values,
+                name=country,
+                legendgroup=country,
+                showlegend=False,
+                hoverinfo="none",
+                mode="markers",
+                marker=go.scatter.Marker(color=color, size=3),
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=line.index,
+                y=line.values,
+                name=country,
+                legendgroup=country,
+                hovertemplate="Average last week: %{y}",
+                line=go.scatter.Line(color=color),
+            )
+        )
+
     return fig
 
 
