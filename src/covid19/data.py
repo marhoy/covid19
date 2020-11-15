@@ -13,13 +13,25 @@ requests_cache.install_cache(
     expire_after=datetime.timedelta(seconds=60), backend="memory"
 )
 
-INFECTED_SOURCE = (
-    r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master"
-    r"/csse_covid_19_data/csse_covid_19_time_series"
-    r"/time_series_covid19_confirmed_global.csv"
+INFECTED_SOURCE_GLOBAL = (
+    r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/"
+    r"csse_covid_19_data/csse_covid_19_time_series/"
+    r"time_series_covid19_confirmed_global.csv"
 )
 
-DEATHS_SOURCE = (
+INFECTED_SOURCE_US = (
+    r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/"
+    r"csse_covid_19_data/csse_covid_19_time_series/"
+    r"time_series_covid19_confirmed_US.csv"
+)
+
+DEATHS_SOURCE_US = (
+    r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/"
+    r"csse_covid_19_data/csse_covid_19_time_series/"
+    r"time_series_covid19_deaths_US.csv"
+)
+
+DEATHS_SOURCE_GLOBAL = (
     r"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master"
     r"/csse_covid_19_data/csse_covid_19_time_series"
     r"/time_series_covid19_deaths_global.csv"
@@ -31,7 +43,7 @@ DAY_ZERO_START = 20
 
 def download_infected() -> pd.DataFrame:
     """Download and preprocess infection data."""
-    response = requests.get(INFECTED_SOURCE)
+    response = requests.get(INFECTED_SOURCE_GLOBAL)
     buffer = io.StringIO(response.content.decode("UTF-8"))
     data = pd.read_csv(buffer)
     return preprocess_covid_dataframe(data)
@@ -39,7 +51,7 @@ def download_infected() -> pd.DataFrame:
 
 def download_deaths() -> pd.DataFrame:
     """Download and preprocess deaths data."""
-    response = requests.get(DEATHS_SOURCE)
+    response = requests.get(DEATHS_SOURCE_GLOBAL)
     buffer = io.StringIO(response.content.decode("UTF-8"))
     data = pd.read_csv(buffer)
     return preprocess_covid_dataframe(data)

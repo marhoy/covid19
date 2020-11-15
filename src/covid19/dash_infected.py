@@ -46,6 +46,7 @@ tab_infected = html.Div(
                                         "label": "Per population size",
                                         "value": "per_pop_size",
                                     },
+                                    {"label": "Growth rate", "value": "growth_rate"},
                                 ],
                                 value=["per_pop_size"],
                                 id="infected-plot-options",
@@ -71,7 +72,7 @@ tab_infected = html.Div(
                         html.Div(id="infected-map-slider-div"),
                     ]
                 ),
-                md=6,
+                md=12,
             )
         ),
     ]
@@ -127,7 +128,11 @@ def infected_per_pop_figure_figure(
         y_axis_type = "log"
     else:
         y_axis_type = "linear"
-    if "per_pop_size" in plot_options:
+    if "growth_rate" in plot_options:
+        fig_title = "Growth rate"
+        y_axis_title = "Growth rate"
+        hoverformat = ".3f"
+    elif "per_pop_size" in plot_options:
         fig_title = "Infected per 100.000 population"
         y_axis_title = "Infected per 100.000"
         hoverformat = ".1f"
@@ -163,9 +168,16 @@ def infected_per_pop_figure_figure(
             )
         else:
             data = infected[country].dropna()
+
+        if "growth_rate" in plot_options:
+            data = (data / data.shift(1)).ewm(3).mean()
+
         fig.add_trace(
             go.Scatter(x=data.index, y=data.values, name=country, mode="lines")
         )
+
+    if "growth_rate" in plot_options:
+        fig.update_layout({"yaxis": {"range": [0.95, 1.6]}})
     return fig
 
 

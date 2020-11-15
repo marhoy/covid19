@@ -8,7 +8,6 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 import covid19.dash_deaths
-import covid19.dash_forecast
 import covid19.dash_infected
 
 from .dash_app import app
@@ -54,13 +53,13 @@ app.layout = dbc.Container(
                             selected_className="bg-primary",
                             children=[covid19.dash_deaths.tab_deaths],
                         ),
-                        dcc.Tab(
-                            label="Forecast",
-                            value="tab-forecast",
-                            className="h3",
-                            selected_className="bg-primary",
-                            children=[covid19.dash_forecast.tab_forecast],
-                        ),
+                        # dcc.Tab(
+                        #     label="Forecast",
+                        #     value="tab-forecast",
+                        #     className="h3",
+                        #     selected_className="bg-primary",
+                        #     children=[covid19.dash_forecast.tab_forecast],
+                        # ),
                     ],
                 ),
                 footer,
