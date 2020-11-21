@@ -288,7 +288,7 @@ def infected_map_figure(idx: int) -> go.Figure:
         data=go.Choropleth(
             locations=df["ISO3"],
             z=df["Inf/Pop"].round(decimals=0),
-            zmax=100,
+            zmax=2000,
             zmin=0,
             text=df["text"],
             hovertemplate="%{text}<extra></extra>",
