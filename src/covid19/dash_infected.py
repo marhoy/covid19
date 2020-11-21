@@ -5,6 +5,7 @@ from typing import List
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
+import numpy as np
 import pandas as pd
 import plotly.colors
 import plotly.graph_objects as go
@@ -201,7 +202,7 @@ def infected_per_day_figure(
         y_axis_title = "Infections per day"
 
     # Get data
-    infected_per_day = covid19.dash_app.infected_raw.diff()
+    infected = covid19.dash_app.infected_raw
     population = covid19.dash_app.population
 
     fig = go.Figure(
@@ -222,30 +223,31 @@ def infected_per_day_figure(
     for country, color in zip(
         countries_to_plot, itertools.cycle(plotly.colors.qualitative.Plotly)
     ):
+        # Sometimes, the number of total infections is frozen for several days and then
+        # updated. We detect these regions by looking at the diff, and then linearly
+        # interpolate the missing values.
+        data = infected[country]
+        data.loc[data.diff() == 0] = np.nan
+        data = data.interpolate(method="linear").diff()
+
         if "per_pop_size" in plot_options:
-            data = (
-                infected_per_day[country]
-                / population.loc[country, "Population"]
-                * 100_000
-            )
-        else:
-            data = infected_per_day[country]
+            data = data / population.loc[country, "Population"] * 100_000
 
-        points = data  # .replace(0, pd.NA)
         line = data.rolling(window=pd.Timedelta("7days")).mean()
+        # points = data  # .replace(0, pd.NA)
 
-        fig.add_trace(
-            go.Scatter(
-                x=points.index,
-                y=points.values,
-                name=country,
-                legendgroup=country,
-                showlegend=False,
-                hoverinfo="none",
-                mode="markers",
-                marker=go.scatter.Marker(color=color, size=3),
-            )
-        )
+        # fig.add_trace(
+        #     go.Scatter(
+        #         x=points.index,
+        #         y=points.values,
+        #         name=country,
+        #         legendgroup=country,
+        #         showlegend=False,
+        #         hoverinfo="none",
+        #         mode="markers",
+        #         marker=go.scatter.Marker(color=color, size=3),
+        #     )
+        # )
         fig.add_trace(
             go.Scatter(
                 x=line.index,
@@ -256,7 +258,6 @@ def infected_per_day_figure(
                 line=go.scatter.Line(color=color),
             )
         )
-
     return fig
 
 

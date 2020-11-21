@@ -14,10 +14,7 @@ app = dash.Dash(
 )
 app.title = "Corona Dashboard"
 
-DROPDOWN_SELECTED_COUNTRIES = [
-    "Norway",
-    "Denmark",
-]
+DROPDOWN_SELECTED_COUNTRIES = ["Norway", "Denmark", "Sweden"]
 
 # We store all the data as global variables, and update them below
 infected, deaths, population = covid19.data.get_shifted_data()
