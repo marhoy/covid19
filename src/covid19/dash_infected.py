@@ -201,7 +201,7 @@ def infected_per_day_figure(
         y_axis_title = "Infections per day"
 
     # Get data
-    infected = covid19.dash_app.infected_raw.diff()
+    infected_per_day = covid19.dash_app.infected_raw.diff()
     population = covid19.dash_app.population
 
     fig = go.Figure(
@@ -224,19 +224,20 @@ def infected_per_day_figure(
     ):
         if "per_pop_size" in plot_options:
             data = (
-                infected[country].replace(0, pd.NA).dropna()
+                infected_per_day[country]
                 / population.loc[country, "Population"]
                 * 100_000
             )
         else:
-            data = infected[country].replace(0, pd.NA).dropna()
+            data = infected_per_day[country]
 
-        line = data.rolling(window=pd.Timedelta("7d")).mean()
+        points = data  # .replace(0, pd.NA)
+        line = data.rolling(window=pd.Timedelta("7days")).mean()
 
         fig.add_trace(
             go.Scatter(
-                x=data.index,
-                y=data.values,
+                x=points.index,
+                y=points.values,
                 name=country,
                 legendgroup=country,
                 showlegend=False,
